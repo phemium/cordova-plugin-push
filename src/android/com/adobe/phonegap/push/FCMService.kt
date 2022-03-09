@@ -117,16 +117,18 @@ class FCMService : FirebaseMessagingService() {
         setApplicationIconBadgeNumber(context, 0)
       }
 
+      val inForeground = isInForeground()
+
       // Foreground
-      extras.putBoolean(PushConstants.FOREGROUND, isInForeground)
+      extras.putBoolean(PushConstants.FOREGROUND, inForeground)
 
       // if we are in the foreground and forceShow is `false` only send data
       val forceShow = pushSharedPref.getBoolean(PushConstants.FORCE_SHOW, false)
-      if (!forceShow && isInForeground) {
+      if (!forceShow && inForeground) {
         Log.d(TAG, "Do Not Force & Is In Foreground")
         extras.putBoolean(PushConstants.COLDSTART, false)
         sendExtras(extras)
-      } else if (forceShow && isInForeground) {
+      } else if (forceShow && inForeground) {
         Log.d(TAG, "Force & Is In Foreground")
         extras.putBoolean(PushConstants.COLDSTART, false)
         showNotificationIfPossible(extras)

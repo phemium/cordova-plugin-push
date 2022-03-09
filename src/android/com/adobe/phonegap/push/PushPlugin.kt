@@ -3,6 +3,9 @@ package com.adobe.phonegap.push
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.Activity
+import android.app.ActivityManager
+import android.app.ActivityManager.RunningAppProcessInfo
+import android.app.Application.ActivityLifecycleCallbacks
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.ContentResolver
@@ -14,6 +17,7 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.google.firebase.iid.FirebaseInstanceId
@@ -26,6 +30,7 @@ import org.json.JSONObject
 import java.io.IOException
 import java.util.*
 
+
 /**
  * Cordova Plugin Push
  */
@@ -36,12 +41,16 @@ class PushPlugin : CordovaPlugin() {
     const val PREFIX_TAG: String = "cordova-plugin-push"
     private const val TAG: String = "$PREFIX_TAG (PushPlugin)"
 
-    /**
-     * Is the WebView in the foreground?
-     */
-    var isInForeground: Boolean = false
 
-    private var pushContext: CallbackContext? = null
+    private val mCallbacks: MyActivityLifecycleCallbacks = MyActivityLifecycleCallbacks()
+
+    /**
+     * Contains all the callback contexts for each Activity used by the application
+     */
+    private val callbackContextsMap = HashMap<String, ArrayList<CallbackContext>>()
+
+    private var currentActivity: AppCompatActivity? = null
+
     private var gWebView: CordovaWebView? = null
     private val gCachedExtras = Collections.synchronizedList(ArrayList<Bundle>())
 
@@ -49,9 +58,52 @@ class PushPlugin : CordovaPlugin() {
      *
      */
     fun sendEvent(json: JSONObject?) {
+      try {
+        if (json != null) {
+          Log.d(TAG, json.toString(4))
+        }
+      } catch (e: JSONException) {
+        e.printStackTrace()
+      }
       val pluginResult = PluginResult(PluginResult.Status.OK, json)
         .apply { keepCallback = true }
-      pushContext?.sendPluginResult(pluginResult)
+      sendPluginResultToCurrentActivity(pluginResult)
+    }
+
+    private fun sendPluginResultToCurrentActivity(pluginResult: PluginResult?) {
+      val activityName = getCurrentActivityName()
+      Log.d(TAG, "Sending event to current activity: $activityName")
+      val contexts: List<CallbackContext>? = callbackContextsMap[activityName]
+      Log.d(TAG, "Current activity has " + contexts!!.size + " callback contexts")
+      var index = 0
+      while (contexts.size > index) {
+        val callbackContext = contexts[index]
+        Log.d(
+          TAG,
+          "Sending pluginResult to activity " + activityName + " and CallbackContext #" + callbackContext.callbackId
+        )
+        callbackContext.sendPluginResult(pluginResult)
+        index++
+      }
+    }
+
+    fun sendError(message: String?) {
+      val pluginResult = PluginResult(PluginResult.Status.ERROR, message)
+      pluginResult.keepCallback = true
+      sendPluginResultToCurrentActivity(pluginResult)
+    }
+
+    fun getCurrentActivityName(): String {
+      return currentActivity!!.javaClass.simpleName
+    }
+
+    fun isInForeground(): Boolean {
+      val appProcessInfo = RunningAppProcessInfo()
+      ActivityManager.getMyMemoryState(appProcessInfo)
+      val gForeground =
+        appProcessInfo.importance == RunningAppProcessInfo.IMPORTANCE_FOREGROUND || appProcessInfo.importance == RunningAppProcessInfo.IMPORTANCE_VISIBLE
+      Log.d(TAG, "isInForeground: $gForeground")
+      return gForeground
     }
 
     /**
@@ -211,6 +263,30 @@ class PushPlugin : CordovaPlugin() {
 
   private val appName: String
     get() = activity.packageManager.getApplicationLabel(activity.applicationInfo) as String
+
+  fun addCallbackContext(callbackContext: CallbackContext) {
+    val activityName: String = getCurrentActivityName()
+    if (!callbackContextsMap.containsKey(activityName)) {
+      callbackContextsMap[activityName] = ArrayList()
+    }
+    val contexts: MutableList<CallbackContext>? = callbackContextsMap[activityName]
+    var index = 0
+    var foundCallbackContext = -1
+    while (contexts!!.size > index) {
+      if (contexts[index].callbackId === callbackContext.callbackId) {
+        foundCallbackContext = index
+        break
+      }
+      index++
+    }
+    if (foundCallbackContext == -1) {
+      Log.d(
+        TAG,
+        "Registering new CallbackContext #" + callbackContext.callbackId + " inside Activity " + activityName
+      )
+      contexts.add(callbackContext)
+    }
+  }
 
   @TargetApi(26)
   @Throws(JSONException::class)
@@ -400,6 +476,7 @@ class PushPlugin : CordovaPlugin() {
     Log.v(TAG, "Execute: Action = $action")
 
     gWebView = webView
+    currentActivity = cordova.activity
 
     when (action) {
       PushConstants.INITIALIZE -> executeActionInitialize(data, callbackContext)
@@ -435,7 +512,7 @@ class PushPlugin : CordovaPlugin() {
     cordova.threadPool.execute(Runnable {
       Log.v(TAG, formatLogMessage("Data=$data"))
 
-      pushContext = callbackContext
+      addCallbackContext(callbackContext)
 
       val sharedPref = applicationContext.getSharedPreferences(
         PushConstants.COM_ADOBE_PHONEGAP_PUSH,
@@ -577,7 +654,7 @@ class PushPlugin : CordovaPlugin() {
            */
           putString(PushConstants.TITLE_KEY, it.optString(PushConstants.TITLE_KEY))
 
-          commit()
+          apply()
         }
       }
 
@@ -632,7 +709,7 @@ class PushPlugin : CordovaPlugin() {
             remove(PushConstants.MESSAGE_KEY)
             remove(PushConstants.TITLE_KEY)
 
-            commit()
+            apply()
           }
         }
 
@@ -784,31 +861,17 @@ class PushPlugin : CordovaPlugin() {
    */
   override fun initialize(cordova: CordovaInterface, webView: CordovaWebView) {
     super.initialize(cordova, webView)
-    isInForeground = true
   }
 
-  /**
-   * Handle when the view is being paused
-   */
-  override fun onPause(multitasking: Boolean) {
-    isInForeground = false
-    super.onPause(multitasking)
-  }
-
-  /**
-   * Handle when the view is resuming
-   */
-  override fun onResume(multitasking: Boolean) {
-    super.onResume(multitasking)
-    isInForeground = true
+  override fun pluginInitialize() {
+    cordova.activity.application.registerActivityLifecycleCallbacks(mCallbacks)
+    super.pluginInitialize()
   }
 
   /**
    * Handle when the view is being destroyed
    */
   override fun onDestroy() {
-    isInForeground = false
-    gWebView = null
 
     // Clear Notification
     applicationContext.getSharedPreferences(
@@ -819,7 +882,7 @@ class PushPlugin : CordovaPlugin() {
         clearAllNotifications()
       }
     }
-
+    cordova.activity.application.unregisterActivityLifecycleCallbacks(mCallbacks)
     super.onDestroy()
   }
 
@@ -860,6 +923,50 @@ class PushPlugin : CordovaPlugin() {
     topic?.let {
       Log.d(TAG, "Unsubscribing to topic: $it")
       FirebaseMessaging.getInstance().unsubscribeFromTopic(it)
+    }
+  }
+
+  class MyActivityLifecycleCallbacks : ActivityLifecycleCallbacks {
+    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+      val activityName = activity.javaClass.simpleName
+      Log.d(TAG, "Created activity: $activityName")
+      if (!callbackContextsMap.containsKey(activityName)) {
+        callbackContextsMap[activityName] = ArrayList<CallbackContext>()
+      }
+    }
+
+    override fun onActivityStarted(activity: Activity) {
+      val activityName = activity.javaClass.simpleName
+      LOG.d(TAG, "Started activity: $activityName")
+    }
+
+    override fun onActivityResumed(activity: Activity) {
+      val activityName = activity.javaClass.simpleName
+      LOG.d(TAG, "Resumed activity: $activityName")
+      currentActivity = activity as AppCompatActivity
+    }
+
+    override fun onActivityPaused(activity: Activity) {
+      val activityName = activity.javaClass.simpleName
+      LOG.d(TAG, "Paused activity: $activityName")
+    }
+
+    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
+    override fun onActivityStopped(activity: Activity) {
+      val activityName = activity.javaClass.simpleName
+      LOG.d(TAG, "Stopped activity: $activityName")
+    }
+
+    override fun onActivityDestroyed(activity: Activity) {
+      val activityName = activity.javaClass.simpleName
+      LOG.d(TAG, "Destroying activity: $activityName")
+      if (callbackContextsMap.containsKey(activityName)) {
+        callbackContextsMap.remove(activityName)
+      }
+    }
+
+    companion object {
+      private const val TAG = "Activities"
     }
   }
 }
