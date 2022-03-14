@@ -8,34 +8,33 @@ All objects will be understood as having a defined type, including init options 
 All available attributes and properties will have autocomplete support and type checkings.
 
 ```typescript
-import '@havesource/cordova-plugin-push/types';
+import "@phemium-costaisa/cordova-plugin-push/types";
 
 const push = PushNotification.init({
-	android: {
-	},
-	ios: {
-		alert: "true",
-		badge: true,
-		sound: 'false'
-	},
-	windows: {}
+  android: {},
+  ios: {
+    alert: "true",
+    badge: true,
+    sound: "false",
+  },
+  windows: {},
 });
 
-push.on('registration', (data) => {
-	console.log(data.registrationId);
+push.on("registration", (data) => {
+  console.log(data.registrationId);
 });
 
-push.on('notification', (data) => {
-	console.log(data.message);
-	console.log(data.title);
-	console.log(data.count);
-	console.log(data.sound);
-	console.log(data.image);
-	console.log(data.additionalData);
+push.on("notification", (data) => {
+  console.log(data.message);
+  console.log(data.title);
+  console.log(data.count);
+  console.log(data.sound);
+  console.log(data.image);
+  console.log(data.additionalData);
 });
 
-push.on('error', (e) => {
-	console.log(e.message);
+push.on("error", (e) => {
+  console.log(e.message);
 });
 ```
 
@@ -43,25 +42,26 @@ If you have custom attributes being sent from the server on the payload, you can
 
 ```typescript
 module my.custom {
-	export interface NotificationEventResponse extends PhonegapPluginPush.NotificationEventResponse {
-		additionalData: NotificationEventAdditionalData;
-	}
+  export interface NotificationEventResponse extends PhonegapPluginPush.NotificationEventResponse {
+    additionalData: NotificationEventAdditionalData;
+  }
 
-	export interface NotificationEventAdditionalData extends PhonegapPluginPush.NotificationEventAdditionalData {
-		bacon?: boolean;
-	}
+  export interface NotificationEventAdditionalData
+    extends PhonegapPluginPush.NotificationEventAdditionalData {
+    bacon?: boolean;
+  }
 }
 
-push.on('notification', (data: my.custom.NotificationEventResponse) => {
-	//standard attributes
-	console.log(data.message);
-	console.log(data.title);
-	console.log(data.count);
-	console.log(data.sound);
-	console.log(data.image);
-	console.log(data.additionalData);
+push.on("notification", (data: my.custom.NotificationEventResponse) => {
+  //standard attributes
+  console.log(data.message);
+  console.log(data.title);
+  console.log(data.count);
+  console.log(data.sound);
+  console.log(data.image);
+  console.log(data.additionalData);
 
-	//custom attributes
-	console.log(data.additionalData.bacon);
+  //custom attributes
+  console.log(data.additionalData.bacon);
 });
 ```
