@@ -102,6 +102,8 @@
     <source-file src="src/android/com/adobe/phonegap/push/PushPlugin.kt" target-dir="java/com/adobe/phonegap/push/"/>
     <source-file src="src/android/com/adobe/phonegap/push/BackgroundActionButtonHandler.kt" target-dir="java/com/adobe/phonegap/push/"/>
     <source-file src="src/android/com/adobe/phonegap/push/PushDismissedHandler.kt" target-dir="java/com/adobe/phonegap/push/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/CordovaCall.java" target-dir="java/com/adobe/phonegap/push/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/MyConnectionService.java" target-dir="java/com/adobe/phonegap/push/"/>
   </platform>
 
   <platform name="browser">
