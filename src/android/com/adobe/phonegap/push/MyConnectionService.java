@@ -1,4 +1,4 @@
-package com.dmarc.cordovacall;
+package com.adobe.phonegap.push;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.PluginResult;
