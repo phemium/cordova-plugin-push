@@ -943,7 +943,11 @@ class PushPlugin : CordovaPlugin() {
     override fun onActivityResumed(activity: Activity) {
       val activityName = activity.javaClass.simpleName
       LOG.d(TAG, "Resumed activity: $activityName")
-      currentActivity = activity as AppCompatActivity
+      try {
+        currentActivity = activity as AppCompatActivity
+      } catch (e: Exception) {
+        LOG.e(TAG, "Unable to cast new activity as AppCompatActivity")
+      }
     }
 
     override fun onActivityPaused(activity: Activity) {
