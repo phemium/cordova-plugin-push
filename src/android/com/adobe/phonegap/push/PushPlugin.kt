@@ -606,7 +606,7 @@ class PushPlugin : CordovaPlugin() {
     Logger.Debug(TAG, "executeActionChangeLanguage", "init")
     Logger.Debug(TAG, "executeActionChangeLanguage", data.toString())
     cordova.threadPool.execute {
-      val language = data.getJSONObject(0).getString(PushConstants.LANGUAGE)
+      val language = data.getString(0)
       Logger.Debug(TAG, "executeActionChangeLanguage", "Execute Change Language to $language")
       Globals.language = language
       callbackContext.success()
