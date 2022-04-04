@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
   xmlns:android="http://schemas.android.com/apk/res/android"
-  id="@phemium-costaisa/cordova-plugin-push" version="3.0.7">
+  id="@phemium-costaisa/cordova-plugin-push" version="3.0.8">
 
   <name>Cordova Push Plugin</name>
   <description>Enable receiving push notifications on Android, iOS and Windows devices. Android uses Firebase Cloud Messaging. iOS uses Apple APNS Notifications. Windows uses Microsoft WNS Notifications.</description>
@@ -78,11 +78,10 @@
 
     <source-file src="src/android/com/adobe/phonegap/push/firebase/MessagingService.kt" target-dir="java/com/adobe/phonegap/push/firebase/"/>
     <source-file src="src/android/com/adobe/phonegap/push/firebase/Topics.kt" target-dir="java/com/adobe/phonegap/push/firebase/"/>
-    <source-file src="src/android/com/adobe/phonegap/push/logs/Logger.kt" target-dir="java/com/adobe/phonegap/push/firebase/logs/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/logs/Logger.kt" target-dir="java/com/adobe/phonegap/push/logs/"/>
     <source-file src="src/android/com/adobe/phonegap/push/notifications/channels/CallChannel.kt" target-dir="java/com/adobe/phonegap/push/notifications/channels/"/>
     <source-file src="src/android/com/adobe/phonegap/push/notifications/channels/ICustomChannel.kt" target-dir="java/com/adobe/phonegap/push/notifications/channels/"/>
     <source-file src="src/android/com/adobe/phonegap/push/notifications/channels/MessageChannel.kt" target-dir="java/com/adobe/phonegap/push/notifications/channels/"/>
-    <source-file src="src/android/com/adobe/phonegap/push/notifications/channels/NotificationChannelType.kt" target-dir="java/com/adobe/phonegap/push/notifications/channels/"/>
     <source-file src="src/android/com/adobe/phonegap/push/notifications/CallNotificationActionReceiver.kt" target-dir="java/com/adobe/phonegap/push/notifications/"/>
     <source-file src="src/android/com/adobe/phonegap/push/notifications/CallNotificationService.kt" target-dir="java/com/adobe/phonegap/push/notifications/"/>
     <source-file src="src/android/com/adobe/phonegap/push/notifications/IncomingRinger.kt" target-dir="java/com/adobe/phonegap/push/notifications/"/>
