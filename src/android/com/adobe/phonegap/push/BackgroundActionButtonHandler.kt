@@ -1,11 +1,9 @@
 package com.adobe.phonegap.push
 
 import android.annotation.SuppressLint
-import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import androidx.core.app.RemoteInput
 import com.adobe.phonegap.push.firebase.MessagingService
 import com.adobe.phonegap.push.logs.Logger
@@ -29,7 +27,7 @@ class BackgroundActionButtonHandler : BroadcastReceiver() {
     val notId = intent.getIntExtra(PushConstants.NOT_ID, 0)
     Logger.Debug(TAG, "onReceive", "Not ID: $notId")
 
-    val notificationManager = ServiceUtils.notificationService
+    val notificationManager = ServiceUtils.notificationService(context)
     notificationManager.cancel(MessagingService.getAppName(context), notId)
 
     intent.extras?.let { extras ->

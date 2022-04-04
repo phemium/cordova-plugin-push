@@ -59,6 +59,10 @@ class MessagingService : FirebaseMessagingService() {
     }
   }
 
+  fun onNewToken(token: String) {
+        Logger.Debug(TAG, "onNewToken", "Refreshed token: $token")
+  }
+
   private val context: Context
     get() = applicationContext
 
@@ -99,60 +103,52 @@ class MessagingService : FirebaseMessagingService() {
 
       // Convert to JSON
       val jsonParams = JSONObject(params);
-      if (jsonParams != null) {
 
-        val extras = Bundle()
+      val extras = Bundle()
 
-        // Gather useful data from payload for call notification
-        extras.putString(PushConstants.EXTRA_TITLE, data.getString("text"))
+      // Gather useful data from payload for call notification
+      extras.putString(PushConstants.EXTRA_TITLE, data.getString("text"))
+      try {
+        val consultant = jsonParams.getString("consultant")
+        if (!consultant.isNullOrEmpty()) {
+          extras.putString(PushConstants.EXTRA_DESCRIPTION, consultant)
+        }
+      } catch (e: Exception) {
+        Logger.Debug(TAG, "showCall", "Consultant name not found, trying to get consultantId")
         try {
-          val consultant = jsonParams.getString("consultant")
-          if (!consultant.isNullOrEmpty()) {
-            extras.putString(PushConstants.EXTRA_DESCRIPTION, consultant)
-          }
+          val consultantId = jsonParams.getInt("consultant_id")
+          extras.putString(PushConstants.EXTRA_DESCRIPTION, "Consultant #$consultantId")
         } catch (e: Exception) {
-          Logger.Debug(TAG, "showCall", "Consultant name not found, trying to get consultantId")
-          try {
-            val consultantId = jsonParams.getInt("consultant_id")
-            if (consultantId != null) {
-              extras.putString(PushConstants.EXTRA_DESCRIPTION, "Consultant #$consultantId")
-            } else {
-              Logger.Debug(TAG, "showCall", "Invalid Consultant ID, giving up...")
-            }
-          } catch (e: Exception) {
-            Logger.Debug(TAG, "showCall", "Consultant ID not found, giving up...")
-          }
+          Logger.Debug(TAG, "showCall", "Consultant ID not found, giving up...")
         }
-        extras.putString(PushConstants.EXTRA_COLOR, data.getString("color"))
-        val consultationId = jsonParams.getInt("consultation_id")
-        extras.putInt(PushConstants.EXTRA_CONSULTATION_ID, consultationId)
+      }
+      extras.putString(PushConstants.EXTRA_COLOR, data.getString("color"))
+      val consultationId = jsonParams.getInt("consultation_id")
+      extras.putInt(PushConstants.EXTRA_CONSULTATION_ID, consultationId)
 
-        /**
-         * Check if there's already a calling request
-         * Multiple calls are not supported, any subsequent call will be put on hold
-         */
-        if (CallNotificationService.isBusy) {
-          // Create Call on hold notification
-          CallNotificationService.createCallOnHold(extras)
-        } else {
-          // Delete any previous Call Request notification for this consultation
-          if (NotificationBuilder.notificationIds.containsKey(consultationId)) {
-            val notificationId = NotificationBuilder.notificationIds[consultationId]
-            if (notificationId != null) {
-              /**
-               * TODO: Fix this
-               * The previous awaiting call is not removed
-               */
-              ServiceUtils.notificationService.cancel(notificationId)
-            }
-          }
-          // Start service for Call Notification
-          val serviceIntent = Intent(this, CallNotificationService::class.java)
-          serviceIntent.putExtras(extras)
-          startService(serviceIntent)
-        }
+      /**
+       * Check if there's already a calling request
+       * Multiple calls are not supported, any subsequent call will be put on hold
+       */
+      if (CallNotificationService.isBusy) {
+        // Create Call on hold notification
+        CallNotificationService.createCallOnHold(context, extras)
       } else {
-        Logger.Error(TAG, "showCall", "Invalid `params` in message body")
+        // Delete any previous Call Request notification for this consultation
+        if (NotificationBuilder.notificationIds.containsKey(consultationId)) {
+          val notificationId = NotificationBuilder.notificationIds[consultationId]
+          if (notificationId != null) {
+            /**
+             * TODO: Fix this
+             * The previous awaiting call is not removed
+             */
+            ServiceUtils.notificationService(context).cancel(notificationId)
+          }
+        }
+        // Start service for Call Notification
+        val serviceIntent = Intent(this, CallNotificationService::class.java)
+        serviceIntent.putExtras(extras)
+        startService(serviceIntent)
       }
     } catch (e: Exception) {
       Log.e(TAG, "Error: " + e.stackTraceToString())
@@ -197,7 +193,7 @@ class MessagingService : FirebaseMessagingService() {
       // Clear Badge
       val clearBadge = pushSharedPref.getBoolean(PushConstants.CLEAR_BADGE, false)
       if (clearBadge) {
-        Tools.applicationIconBadgeNumber = 0
+        Tools.setApplicationIconBadgeNumber(context, 0)
       }
 
       val inForeground = isInForeground()
@@ -469,11 +465,11 @@ class MessagingService : FirebaseMessagingService() {
       val badgeCount = extractBadgeCount(extras)
 
       if (badgeCount >= 0) {
-        Tools.applicationIconBadgeNumber = badgeCount
+        Tools.setApplicationIconBadgeNumber(context, badgeCount)
       }
 
       if (badgeCount == 0) {
-        ServiceUtils.notificationService.cancelAll()
+        ServiceUtils.notificationService(context).cancelAll()
       }
 
       Log.d(TAG, "message=$message")
@@ -518,7 +514,7 @@ class MessagingService : FirebaseMessagingService() {
   }
 
   private fun createNotification(extras: Bundle?) {
-    val mNotificationManager = ServiceUtils.notificationService
+    val mNotificationManager = ServiceUtils.notificationService(context)
     val appName = getAppName(this)
     val notId = parseNotificationIdToInt(extras)
     val notificationIntent = Intent(this, PushHandlerActivity::class.java).apply {

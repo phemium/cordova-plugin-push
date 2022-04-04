@@ -1,8 +1,8 @@
 package com.adobe.phonegap.push.notifications
 
+import android.annotation.SuppressLint
 import com.adobe.phonegap.push.logs.Logger.Debug
 import android.content.Intent
-import com.adobe.phonegap.push.utils.Globals
 import androidx.annotation.RequiresApi
 import com.adobe.phonegap.push.PushConstants
 import com.adobe.phonegap.push.notifications.channels.CallChannel
@@ -27,7 +27,7 @@ class CallNotificationService : Service() {
 
     override fun onCreate() {
         if (ringtone == null) {
-            ringtone = IncomingRinger(Globals.applicationContext!!)
+            ringtone = IncomingRinger(this)
         }
     }
 
@@ -51,13 +51,13 @@ class CallNotificationService : Service() {
         val consultationId = data!!.getInt(PushConstants.EXTRA_CONSULTATION_ID)
         try {
             // Create Notification Channel
-            val channelId = NotificationChannelManager.createIfNeeded(CallChannel().asJSON(), false)
+            val channelId = NotificationChannelManager.createIfNeeded(this, CallChannel().asJSON(), false)
             CallChannel.CHANNEL_ID = channelId!!
 
             // Create Notification
-            val notification = NotificationBuilder(channelId, consultationId)
+            val notification = NotificationBuilder(this, channelId, consultationId)
 
-            // Passthrough IntentExtras
+            // Fallthrough IntentExtras
             data.putInt(PushConstants.EXTRA_NOTIFICATION_ID, notification.id)
             notification.setExtras(data)
 
@@ -69,7 +69,7 @@ class CallNotificationService : Service() {
 
             // Use notification payload param `color` for notification icon color
             val color = data.getString(PushConstants.EXTRA_COLOR)
-            if (color != null && !color.isEmpty()) {
+            if (color != null && color.isNotEmpty()) {
                 Debug("HeadsUpNotificationService", "onStartCommand", "Using payload color: $color")
                 notification.setColor(color)
             }
@@ -84,7 +84,7 @@ class CallNotificationService : Service() {
             ringtone!!.start(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE), true)
 
             // Wake Up device
-            Tools.wakeUpDevice()
+            Tools.wakeUpDevice(this)
 
             // Create Lost Call after 20s
             // TODO: It should come from the server
@@ -106,14 +106,15 @@ class CallNotificationService : Service() {
         return START_STICKY
     }
 
+    @SuppressLint("UnspecifiedImmutableFlag")
     @Throws(CanceledException::class)
     private fun showLostCall(extras: Bundle?) {
         val lostCallIntent =
-            Intent(Globals.applicationContext, CallNotificationActionReceiver::class.java)
+            Intent(this, CallNotificationActionReceiver::class.java)
         lostCallIntent.putExtras(extras!!)
         lostCallIntent.action = "CANCEL_NOTIFICATION"
         val pi = PendingIntent.getBroadcast(
-            Globals.applicationContext,
+            this,
             0,
             lostCallIntent,
             PendingIntent.FLAG_UPDATE_CURRENT
@@ -129,17 +130,17 @@ class CallNotificationService : Service() {
         }
 
         @RequiresApi(api = Build.VERSION_CODES.O)
-        fun createCallOnHold(extras: Bundle) {
+        fun createCallOnHold(context: Context, extras: Bundle) {
             // Create Notification Channel
             val channelId =
-                NotificationChannelManager.createIfNeeded(MessageChannel().asJSON(), false)
+                NotificationChannelManager.createIfNeeded(context, MessageChannel().asJSON(), false)
             CallChannel.CHANNEL_ID = channelId!!
 
             // Create Notification
             val notification =
-                NotificationBuilder(channelId, extras.getInt(PushConstants.EXTRA_CONSULTATION_ID))
+                NotificationBuilder(context, channelId, extras.getInt(PushConstants.EXTRA_CONSULTATION_ID))
 
-            // Passthrough IntentExtras
+            // Fallthrough IntentExtras
             extras.putInt(PushConstants.EXTRA_NOTIFICATION_ID, notification.id)
             notification.setExtras(extras)
 
@@ -148,7 +149,7 @@ class CallNotificationService : Service() {
 
             // Use notification payload param `color` for notification icon color
             val color = extras.getString(PushConstants.EXTRA_COLOR)
-            if (color != null && !color.isEmpty()) {
+            if (color != null && color.isNotEmpty()) {
                 Debug(
                     "HeadsUpNotificationService",
                     "createCallOnHold",

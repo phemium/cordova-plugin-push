@@ -7,7 +7,6 @@ import android.os.Vibrator
 import android.media.MediaPlayer
 import android.media.AudioManager
 import com.adobe.phonegap.push.utils.ServiceUtils
-import android.os.Build
 import android.media.AudioAttributes
 import android.net.Uri
 import android.provider.Settings
@@ -24,11 +23,11 @@ import java.lang.IllegalStateException
  * vibration or ringtone enabled status, specially in Xiaomi devices
  */
 class IncomingRinger internal constructor(context: Context) {
-    private val context: Context
-    private val vibrator: Vibrator
+    private val context: Context = context.applicationContext
+    private val vibrator: Vibrator = ServiceUtils.vibratorService(context)
     private var player: MediaPlayer? = null
     fun start(uri: Uri?, vibrate: Boolean) {
-        val audioManager = ServiceUtils.audioService
+        val audioManager = ServiceUtils.audioService(context)
         if (player != null) {
             player!!.release()
         }
@@ -88,8 +87,8 @@ class IncomingRinger internal constructor(context: Context) {
         if (player == null) {
             return true
         }
-        val vibrator = ServiceUtils.vibratorService
-        if (vibrator == null || !vibrator.hasVibrator()) {
+        val vibrator = ServiceUtils.vibratorService(context)
+        if (!vibrator.hasVibrator()) {
             return false
         }
         return if (vibrate) {
@@ -170,8 +169,4 @@ class IncomingRinger internal constructor(context: Context) {
         private val VIBRATE_PATTERN = longArrayOf(0, 1000, 1000)
     }
 
-    init {
-        this.context = context.applicationContext
-        vibrator = ServiceUtils.vibratorService
-    }
 }

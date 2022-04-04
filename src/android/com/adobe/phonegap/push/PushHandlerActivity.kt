@@ -2,9 +2,7 @@ package com.adobe.phonegap.push
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.NotificationManager
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.core.app.RemoteInput
@@ -45,13 +43,13 @@ class PushHandlerActivity : Activity() {
       MessagingService().setNotification(notId, "")
 
       if (!startOnBackground) {
-        val notificationManager = ServiceUtils.notificationService
+        val notificationManager = ServiceUtils.notificationService(this.applicationContext)
         notificationManager.cancel(MessagingService.getAppName(this), notId)
       }
 
       val notHaveInlineReply = processPushBundle()
 
-      if (notHaveInlineReply && Build.VERSION.SDK_INT < Build.VERSION_CODES.N && !startOnBackground) {
+      if (notHaveInlineReply && !startOnBackground) {
         foreground = true
       }
 
@@ -139,7 +137,7 @@ class PushHandlerActivity : Activity() {
   override fun onResume() {
     super.onResume()
 
-    val notificationManager = ServiceUtils.notificationService
+    val notificationManager = ServiceUtils.notificationService(this.applicationContext)
     notificationManager.cancelAll()
   }
 }

@@ -28,18 +28,18 @@ class CallNotificationActionReceiver : BroadcastReceiver() {
             context.sendBroadcast(closeDialogs)
         } else if (action == "CANCEL_NOTIFICATION") {
             // Cancel notification
-            val notificationManager = ServiceUtils.notificationService
+            val notificationManager = ServiceUtils.notificationService(context)
             notificationManager.cancel(extras!!.getInt(PushConstants.EXTRA_NOTIFICATION_ID))
             Debug(TAG, "onReceive", "Cancelling call")
             CallNotificationService.clearCallNotification(context)
-            createLostCall(extras)
+            createLostCall(context, extras)
         }
     }
 
     fun performClickAction(context: Context, action: String, extras: Bundle?) {
         if (action === PushConstants.CALL_ACCEPT_ACTION) {
             Debug(TAG, "performClickAction", "Starting activity PEM for CALL_ACCEPT_ACTION action")
-            openEnduserCall(context, extras, null)
+            openEnduserCall(context, extras, true)
         } else if (action === PushConstants.VIEW_CALL_ACTION) {
             Debug(TAG, "performClickAction", "Starting activity PEM for VIEW_CALL action")
             openEnduserCall(context, extras, null)

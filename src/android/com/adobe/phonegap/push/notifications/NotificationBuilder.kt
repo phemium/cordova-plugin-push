@@ -1,8 +1,10 @@
 package com.adobe.phonegap.push.notifications
 
 import android.R
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.media.RingtoneManager
@@ -15,7 +17,6 @@ import com.adobe.phonegap.push.PushConstants
 import com.adobe.phonegap.push.PushPlugin
 import com.adobe.phonegap.push.logs.Logger.Debug
 import com.adobe.phonegap.push.logs.Logger.Error
-import com.adobe.phonegap.push.utils.Globals
 import com.adobe.phonegap.push.utils.ServiceUtils
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -23,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger
  * Class used to create notifications
  */
 class NotificationBuilder @RequiresApi(api = Build.VERSION_CODES.O) constructor(
+    context: Context,
     channelId: String?,
     consultationId: Int
 ) {
@@ -30,7 +32,8 @@ class NotificationBuilder @RequiresApi(api = Build.VERSION_CODES.O) constructor(
     private var extras = Bundle()
 
     // Notification Builder
-    private val notificationBuilder: NotificationCompat.Builder
+    private val notificationBuilder: NotificationCompat.Builder =
+        NotificationCompat.Builder(context, channelId!!)
 
     // Contains this notification ID
     private var notificationId = 0
@@ -42,10 +45,12 @@ class NotificationBuilder @RequiresApi(api = Build.VERSION_CODES.O) constructor(
         return notificationBuilder.build()
     }
 
-    fun getApplicationName(): String? {
-        val applicationInfo = Globals.applicationContext!!.applicationInfo
+    private lateinit var context: Context
+
+    fun getApplicationName(): String {
+        val applicationInfo = context.applicationInfo
         val stringId = applicationInfo.labelRes
-        return if (stringId == 0) applicationInfo.nonLocalizedLabel.toString() else Globals.applicationContext!!.getString(
+        return if (stringId == 0) applicationInfo.nonLocalizedLabel.toString() else context.getString(
             stringId
         )
     }
@@ -56,10 +61,10 @@ class NotificationBuilder @RequiresApi(api = Build.VERSION_CODES.O) constructor(
     }
 
     fun setSmallIcon(iconName: String) {
-        val iconId = Globals.applicationContext.resources.getIdentifier(
+        val iconId = context.resources.getIdentifier(
             iconName,
             "drawable",
-            Globals.applicationContext.packageName
+            context.packageName
         )
         if (iconId != 0) {
             this.setSmallIcon(iconId)
@@ -96,7 +101,7 @@ class NotificationBuilder @RequiresApi(api = Build.VERSION_CODES.O) constructor(
         Debug(TAG, "setContentTitle", "OK")
     }
 
-    fun setHighPriority() {
+    private fun setHighPriority() {
         notificationBuilder.priority = NotificationCompat.PRIORITY_HIGH
         Debug(TAG, "setHighPriority", "OK")
     }
@@ -167,10 +172,11 @@ class NotificationBuilder @RequiresApi(api = Build.VERSION_CODES.O) constructor(
     }
 
     private val cancelCallIntent: PendingIntent
-        private get() {
+        @SuppressLint("UnspecifiedImmutableFlag")
+        get() {
             Debug(TAG, "getCancelCallIntent", "Started")
             val intent =
-                Intent(Globals.applicationContext, CallNotificationActionReceiver::class.java)
+                Intent(context, CallNotificationActionReceiver::class.java)
             intent.putExtras(extras)
             intent.putExtra(
                 PushConstants.CALL_RESPONSE_ACTION_KEY,
@@ -178,7 +184,7 @@ class NotificationBuilder @RequiresApi(api = Build.VERSION_CODES.O) constructor(
             )
             intent.action = PushConstants.CALL_CANCEL_ACTION
             val cancelIntent = PendingIntent.getBroadcast(
-                Globals.applicationContext,
+                context,
                 1201,
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT
@@ -187,15 +193,16 @@ class NotificationBuilder @RequiresApi(api = Build.VERSION_CODES.O) constructor(
             return cancelIntent
         }
     private val fullScreenIntent: PendingIntent
-        private get() {
+        @SuppressLint("UnspecifiedImmutableFlag")
+        get() {
             Debug(TAG, "getFullScreenIntent", "Started")
             val intent =
-                Intent(Globals.applicationContext, CallNotificationActionReceiver::class.java)
+                Intent(context, CallNotificationActionReceiver::class.java)
             intent.putExtras(extras)
             intent.putExtra(PushConstants.CALL_RESPONSE_ACTION_KEY, PushConstants.VIEW_CALL_ACTION)
             intent.action = PushConstants.VIEW_CALL_ACTION
             val cancelIntent = PendingIntent.getBroadcast(
-                Globals.applicationContext,
+                context,
                 1205,
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT
@@ -204,10 +211,11 @@ class NotificationBuilder @RequiresApi(api = Build.VERSION_CODES.O) constructor(
             return cancelIntent
         }
     private val acceptCallIntent: PendingIntent
-        private get() {
+        @SuppressLint("UnspecifiedImmutableFlag")
+        get() {
             Debug(TAG, "getAcceptCallIntent", "Started")
             val intent =
-                Intent(Globals.applicationContext, CallNotificationActionReceiver::class.java)
+                Intent(context, CallNotificationActionReceiver::class.java)
             intent.putExtras(extras)
             intent.putExtra(
                 PushConstants.CALL_RESPONSE_ACTION_KEY,
@@ -215,7 +223,7 @@ class NotificationBuilder @RequiresApi(api = Build.VERSION_CODES.O) constructor(
             )
             intent.action = PushConstants.CALL_ACCEPT_ACTION
             val acceptIntent = PendingIntent.getBroadcast(
-                Globals.applicationContext,
+                context,
                 1200,
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT
@@ -229,7 +237,7 @@ class NotificationBuilder @RequiresApi(api = Build.VERSION_CODES.O) constructor(
     }
 
     fun show() {
-        ServiceUtils.notificationService
+        ServiceUtils.notificationService(context)
             .notify(this.getApplicationName(), notificationId, notificationBuilder.build())
     }
 
@@ -281,33 +289,28 @@ class NotificationBuilder @RequiresApi(api = Build.VERSION_CODES.O) constructor(
         Debug(TAG, "prepareCallOnHold", "OK")
     }
 
+    fun applicationName(): String {
+            val applicationInfo = context.applicationInfo
+            val stringId = applicationInfo.labelRes
+            return if (stringId == 0) applicationInfo.nonLocalizedLabel.toString() else context.getString(
+                stringId
+            )
+        }
+
     companion object {
         private const val TAG = PushPlugin.PREFIX_TAG + " (NotificationBuilder)"
 
         // Variable holding the ID for current and future notifications
         private val c = AtomicInteger(100)
         var notificationIds = HashMap<Int, Int>()
-        val applicationName: String
-            get() {
-                val applicationInfo = Globals.applicationContext.applicationInfo
-                val stringId = applicationInfo.labelRes
-                return if (stringId == 0) applicationInfo.nonLocalizedLabel.toString() else Globals.applicationContext.getString(
-                    stringId
-                )
-            }
+    }
 
-        fun clearAll() {
-            ServiceUtils.notificationService.cancelAll()
-        }
-
-        fun clearOne(id: Int) {
-            ServiceUtils.notificationService.cancel(applicationName, id)
-        }
+    fun clearAll() {
+        ServiceUtils.notificationService(context).cancelAll()
     }
 
     /** Constructor  */
     init {
-        notificationBuilder = NotificationCompat.Builder(Globals.applicationContext, channelId!!)
         notificationBuilder.setDefaults(Notification.DEFAULT_ALL)
         this.consultationId = consultationId
         if (notificationIds.containsKey(consultationId)) {
@@ -317,5 +320,6 @@ class NotificationBuilder @RequiresApi(api = Build.VERSION_CODES.O) constructor(
             notificationIds[consultationId] = notificationId
         }
         Debug(TAG, "NotificationID", notificationId)
+        this.context = context
     }
 }

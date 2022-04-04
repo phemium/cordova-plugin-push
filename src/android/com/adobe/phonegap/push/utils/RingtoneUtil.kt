@@ -19,8 +19,7 @@ import java.lang.reflect.InvocationTargetException
 object RingtoneUtil {
     private val TAG = RingtoneUtil::class.java.toString()
     fun getRingtone(context: Context, uri: Uri): Ringtone? {
-        val tone: Ringtone?
-        tone = try {
+        val tone: Ringtone? = try {
             RingtoneManager.getRingtone(context, uri)
         } catch (e: SecurityException) {
             Error(

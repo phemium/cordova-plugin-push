@@ -4,7 +4,7 @@ import android.app.Notification
 import android.os.Bundle
 import android.app.NotificationManager
 import android.graphics.Color
-import com.adobe.phonegap.push.utils.Globals
+import com.adobe.phonegap.push.PushPlugin
 
 class CallChannel : ICustomChannel {
     fun asJSON(): Bundle {
@@ -34,14 +34,19 @@ class CallChannel : ICustomChannel {
     }
 
     init {
-        if (Globals.language === "es") {
-            name = "Llamadas"
-        } else if (Globals.language === "en") {
-            name = "Calls"
-        } else if (Globals.language === "ca") {
-            name = "Trucades"
-        } else if (Globals.language === "pt") {
-            name = "Chamadas"
+        when {
+            PushPlugin.language === "es" -> {
+                name = "Llamadas"
+            }
+            PushPlugin.language === "en" -> {
+                name = "Calls"
+            }
+            PushPlugin.language === "ca" -> {
+                name = "Trucades"
+            }
+            PushPlugin.language === "pt" -> {
+                name = "Chamadas"
+            }
         }
     }
 }

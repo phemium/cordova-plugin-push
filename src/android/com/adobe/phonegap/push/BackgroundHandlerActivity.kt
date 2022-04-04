@@ -2,7 +2,6 @@ package com.adobe.phonegap.push
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.NotificationManager
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -49,7 +48,7 @@ class BackgroundHandlerActivity : Activity() {
       MessagingService().setNotification(notId, "")
 
       if (!startOnBackground) {
-        val notificationManager = ServiceUtils.notificationService
+        val notificationManager = ServiceUtils.notificationService(this.applicationContext)
         notificationManager.cancel(MessagingService.getAppName(this), notId)
       }
 
@@ -129,7 +128,7 @@ class BackgroundHandlerActivity : Activity() {
   override fun onResume() {
     super.onResume()
 
-    val notificationManager = ServiceUtils.notificationService
+    val notificationManager = ServiceUtils.notificationService(this.applicationContext)
     notificationManager.cancelAll()
   }
 }

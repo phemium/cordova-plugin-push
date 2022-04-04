@@ -3,6 +3,7 @@ package com.adobe.phonegap.push.notifications.channels
 import android.app.Notification
 import android.media.AudioAttributes
 import android.app.NotificationManager
+import android.net.Uri
 import android.provider.Settings
 
 interface ICustomChannel {
@@ -13,7 +14,7 @@ interface ICustomChannel {
         const val vibration = false
         val vibrationPattern = longArrayOf()
         const val visibility = Notification.VISIBILITY_PUBLIC
-        val sound = Settings.System.DEFAULT_RINGTONE_URI
+        val sound: Uri = Settings.System.DEFAULT_RINGTONE_URI
         val audioAttributes: AudioAttributes? = null
         const val light = -1
         const val showBadge = false

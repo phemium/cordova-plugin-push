@@ -6,7 +6,7 @@ import android.media.AudioAttributes
 import android.app.NotificationManager
 import android.graphics.Color
 import android.net.Uri
-import com.adobe.phonegap.push.utils.Globals
+import com.adobe.phonegap.push.PushPlugin
 
 class MessageChannel : ICustomChannel {
     fun asJSON(): Bundle {
@@ -42,14 +42,19 @@ class MessageChannel : ICustomChannel {
     }
 
     init {
-        if (Globals.language === "es") {
-            name = "Mensajes"
-        } else if (Globals.language === "en") {
-            name = "Messages"
-        } else if (Globals.language === "ca") {
-            name = "Missatges"
-        } else if (Globals.language === "pt") {
-            name = "Mensagens"
+        when {
+            PushPlugin.language === "es" -> {
+                name = "Mensajes"
+            }
+            PushPlugin.language === "en" -> {
+                name = "Messages"
+            }
+            PushPlugin.language === "ca" -> {
+                name = "Missatges"
+            }
+            PushPlugin.language === "pt" -> {
+                name = "Mensagens"
+            }
         }
     }
 }

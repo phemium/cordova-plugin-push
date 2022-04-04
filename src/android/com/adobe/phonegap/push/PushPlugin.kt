@@ -22,7 +22,7 @@ import com.adobe.phonegap.push.notifications.*
 import com.adobe.phonegap.push.notifications.channels.CallChannel
 import com.adobe.phonegap.push.notifications.channels.MessageChannel
 import com.adobe.phonegap.push.utils.CordovaCallbackContexts
-import com.adobe.phonegap.push.utils.Globals
+import com.adobe.phonegap.push.utils.ServiceUtils
 import com.adobe.phonegap.push.utils.Tools
 import com.google.firebase.iid.FirebaseInstanceId
 import org.apache.cordova.*
@@ -43,19 +43,16 @@ class PushPlugin : CordovaPlugin() {
     const val PREFIX_TAG: String = "cordova-plugin-push"
     private const val TAG: String = "$PREFIX_TAG (PushPlugin)"
 
+    var language: String = "es"
+
 
     private val mCallbacks: MyActivityLifecycleCallbacks = MyActivityLifecycleCallbacks()
 
     var currentActivity: AppCompatActivity? = null
 
-    // private val cordovaCall = CordovaCall()
-
     var gWebView: CordovaWebView? = null
     private val gCachedExtras = Collections.synchronizedList(ArrayList<Bundle>())
 
-    /**
-     *
-     */
     fun sendEvent(json: JSONObject?) {
       try {
         if (json != null) {
@@ -86,10 +83,6 @@ class PushPlugin : CordovaPlugin() {
       }
     }
 
-    /* fun makeCall(args: JSONArray) {
-      this.cordovaCall.receiveCall(args)
-    } */
-
     fun sendError(message: String?) {
       val pluginResult = PluginResult(PluginResult.Status.ERROR, message)
       pluginResult.keepCallback = true
@@ -111,19 +104,19 @@ class PushPlugin : CordovaPlugin() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     @JvmStatic
-    fun createLostCall(extras: Bundle) {
+    fun createLostCall(context: Context, extras: Bundle) {
       // Create Notification Builder
-      val intent = Intent(Globals.applicationContext, CallNotificationActionReceiver::class.java)
+      val intent = Intent(context, CallNotificationActionReceiver::class.java)
       intent.putExtras(extras)
       intent.putExtra(PushConstants.CALL_RESPONSE_ACTION_KEY, PushConstants.VIEW_CHAT_ACTION)
       intent.action = PushConstants.VIEW_CHAT_ACTION
       val chatIntent = PendingIntent.getBroadcast(
-        Globals.applicationContext,
+        context,
         1204,
         intent,
         PendingIntent.FLAG_UPDATE_CURRENT
       )
-      val notification = NotificationBuilder(MessageChannel.CHANNEL_ID, extras.getInt(PushConstants.EXTRA_CONSULTATION_ID))
+      val notification = NotificationBuilder(context, MessageChannel.CHANNEL_ID, extras.getInt(PushConstants.EXTRA_CONSULTATION_ID))
       notification.setTitle("Llamada perdida")
       val description = extras.getString(PushConstants.EXTRA_DESCRIPTION)
       if (!description.isNullOrEmpty()) {
@@ -248,6 +241,16 @@ class PushPlugin : CordovaPlugin() {
      */
     val isActive: Boolean
       get() = gWebView != null
+
+
+    private fun executeActionChangeLanguage(data: JSONArray, callbackContext: CallbackContext) {
+      Logger.Debug(TAG, "executeActionChangeLanguage", "init")
+      Logger.Debug(TAG, "executeActionChangeLanguage", data.toString())
+      val language = data.getString(0)
+      Logger.Debug(TAG, "executeActionChangeLanguage", "Execute Change Language to $language")
+      this.language = language
+      callbackContext.success()
+    }
   }
 
   private val activity: Activity
@@ -259,12 +262,10 @@ class PushPlugin : CordovaPlugin() {
   @TargetApi(26)
   private fun createDefaultNotificationChannelIfNeeded() {
     // only call on Android O and above
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-      val messageChannelId = NotificationChannelManager.createIfNeeded(MessageChannel().asJSON(), true)
-      MessageChannel.CHANNEL_ID = messageChannelId!!
-      val callChannelId = NotificationChannelManager.createIfNeeded(CallChannel().asJSON(), true)
-      CallChannel.CHANNEL_ID = callChannelId!!
-    }
+    val messageChannelId = NotificationChannelManager.createIfNeeded(applicationContext, MessageChannel().asJSON(), true)
+    MessageChannel.CHANNEL_ID = messageChannelId
+    val callChannelId = NotificationChannelManager.createIfNeeded(applicationContext, CallChannel().asJSON(), true)
+    CallChannel.CHANNEL_ID = callChannelId
   }
 
   /**
@@ -325,7 +326,7 @@ class PushPlugin : CordovaPlugin() {
     Logger.Debug(TAG, "executeFinishCallRequest", "init")
     cordova.threadPool.execute {
       try {
-        applicationContext.stopService(Intent(applicationContext, CallNotificationService::class.java));
+        applicationContext.stopService(Intent(applicationContext, CallNotificationService::class.java))
       } catch (e: java.lang.Exception) {
         callbackContext.error(e.message)
       }
@@ -451,7 +452,7 @@ class PushPlugin : CordovaPlugin() {
           putBoolean(PushConstants.CLEAR_BADGE, clearBadge)
 
           if (clearBadge) {
-              Tools.applicationIconBadgeNumber = 0
+              Tools.setApplicationIconBadgeNumber(applicationContext, 0)
           }
 
           /**
@@ -593,7 +594,7 @@ class PushPlugin : CordovaPlugin() {
 
       try {
         val badgeCount = data.getJSONObject(0).getInt(PushConstants.BADGE)
-          Tools.applicationIconBadgeNumber = badgeCount
+          Tools.setApplicationIconBadgeNumber(applicationContext, badgeCount)
       } catch (e: JSONException) {
         callbackContext.error(e.message)
       }
@@ -602,28 +603,17 @@ class PushPlugin : CordovaPlugin() {
     }
   }
 
-  private fun executeActionChangeLanguage(data: JSONArray, callbackContext: CallbackContext) {
-    Logger.Debug(TAG, "executeActionChangeLanguage", "init")
-    Logger.Debug(TAG, "executeActionChangeLanguage", data.toString())
-    cordova.threadPool.execute {
-      val language = data.getString(0)
-      Logger.Debug(TAG, "executeActionChangeLanguage", "Execute Change Language to $language")
-      Globals.language = language
-      callbackContext.success()
-    }
-  }
-
   private fun executeActionGetIconBadgeNumber(callbackContext: CallbackContext) {
     cordova.threadPool.execute {
       Log.v(TAG, "Execute::GetIconBadgeNumber")
-      callbackContext.success(Tools.applicationIconBadgeNumber)
+      callbackContext.success(Tools.getApplicationIconBadgeNumber(applicationContext))
     }
   }
 
   private fun executeActionClearAllNotifications(callbackContext: CallbackContext) {
     cordova.threadPool.execute {
       Log.v(TAG, "Execute Clear All Notifications")
-      NotificationBuilder.clearAll()
+      ServiceUtils.notificationService(applicationContext).cancelAll()
       callbackContext.success()
     }
   }
@@ -633,7 +623,8 @@ class PushPlugin : CordovaPlugin() {
       try {
         val notificationId = data.getInt(0)
         Log.v(TAG, "Execute::ClearNotification notificationId=$notificationId")
-        NotificationBuilder.clearOne(notificationId)
+        val notificationManager = ServiceUtils.notificationService(applicationContext)
+        notificationManager.cancel(notificationId)
         callbackContext.success()
       } catch (e: JSONException) {
         callbackContext.error(e.message)
@@ -645,11 +636,8 @@ class PushPlugin : CordovaPlugin() {
    * Initialize
    */
   override fun initialize(cordova: CordovaInterface, webView: CordovaWebView) {
-    Globals.Initialize(cordova)
-    Globals.language = "es"
     Logger.setDebug(true)
     super.initialize(cordova, webView)
-    // cordovaCall.initialize(cordova, webView)
   }
 
   override fun pluginInitialize() {
@@ -668,7 +656,7 @@ class PushPlugin : CordovaPlugin() {
       Context.MODE_PRIVATE
     ).apply {
       if (getBoolean(PushConstants.CLEAR_NOTIFICATIONS, true)) {
-        NotificationBuilder.clearAll()
+        ServiceUtils.notificationService(applicationContext).cancelAll()
       }
     }
     cordova.activity.application.unregisterActivityLifecycleCallbacks(mCallbacks)
