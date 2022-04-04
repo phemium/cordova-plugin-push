@@ -12,10 +12,6 @@
     <clobbers target="PushNotification"/>
   </js-module>
 
-  <js-module src="www/call.js" name="CordovaCall">
-    <clobbers target="CordovaCall"/>
-  </js-module>
-
   <engines>
     <engine name="cordova" version=">=10.0.0"/>
     <engine name="cordova-android" version=">=9.0.0"/>
@@ -24,12 +20,6 @@
 
   <platform name="android">
     <hook type="before_compile" src="hooks/android/beforeCompile.js"/>
-    <config-file target="res/xml/config.xml" parent="/*">
-      <feature name="CordovaCall">
-        <param name="android-package" value="com.adobe.phonegap.push.CordovaCall" />
-        <param name="onload" value="true" />
-      </feature>
-    </config-file>
 
     <config-file target="res/xml/config.xml" parent="/*">
       <feature name="PushNotification">
@@ -38,18 +28,13 @@
     </config-file>
 
     <config-file target="AndroidManifest.xml" parent="/manifest">
-      <uses-permission android:name="android.permission.INTERNET"/>
-      <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-      <uses-permission android:name="android.permission.WAKE_LOCK"/>
-      <uses-permission android:name="android.permission.VIBRATE"/>
-    </config-file>
-    <config-file target="AndroidManifest.xml" parent="/*">
-      <uses-permission android:name="android.permission.BIND_TELECOM_CONNECTION_SERVICE"/>
-      <uses-permission android:name="android.permission.CALL_PHONE"/>
-      <uses-permission android:name="android.permission.MANAGE_OWN_CALLS"/>
-    </config-file>
-    
-    <config-file parent="/manifest/application" target="AndroidManifest.xml">
+        <uses-permission android:name="android.permission.INTERNET" />
+        <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+        <uses-permission android:name="android.permission.WAKE_LOCK" />
+        <uses-permission android:name="android.permission.VIBRATE" />
+        <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+        <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+        <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     </config-file>
 
     <config-file target="AndroidManifest.xml" parent="/manifest/application">
@@ -63,21 +48,19 @@
 
       <receiver android:name="com.adobe.phonegap.push.BackgroundActionButtonHandler"/>
       <receiver android:name="com.adobe.phonegap.push.PushDismissedHandler"/>
+      <receiver android:name="com.adobe.phonegap.push.notifications.CallNotificationActionReceiver"/>
 
-      <service android:name="com.adobe.phonegap.push.FCMService">
+      <service android:name="com.adobe.phonegap.push.firebase.MessagingService">
         <intent-filter>
           <action android:name="com.google.firebase.MESSAGING_EVENT"/>
         </intent-filter>
       </service>
+      
+      <service android:name="com.adobe.phonegap.push.notifications.CallNotificationService" />
 
       <service android:name="com.adobe.phonegap.push.PushInstanceIDListenerService">
         <intent-filter>
           <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
-        </intent-filter>
-      </service>
-      <service android:name="com.adobe.phonegap.push.MyConnectionService" android:permission="android.permission.BIND_TELECOM_CONNECTION_SERVICE">
-        <intent-filter>
-          <action android:name="android.telecom.ConnectionService" />
         </intent-filter>
       </service>
     </config-file>
@@ -98,7 +81,24 @@
     <framework src="me.leolin:ShortcutBadger:1.1.22@aar"/>
     <framework src="com.google.firebase:firebase-messaging:$FCM_VERSION"/>
 
-    <source-file src="src/android/com/adobe/phonegap/push/FCMService.kt" target-dir="java/com/adobe/phonegap/push/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/firebase/MessagingService.kt" target-dir="java/com/adobe/phonegap/push/firebase/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/firebase/Topics.java" target-dir="java/com/adobe/phonegap/push/firebase/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/logs/Logger.java" target-dir="java/com/adobe/phonegap/push/firebase/logs/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/notifications/channels/CallChannel.java" target-dir="java/com/adobe/phonegap/push/notifications/channels/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/notifications/channels/ICustomChannel.java" target-dir="java/com/adobe/phonegap/push/notifications/channels/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/notifications/channels/MessageChannel.java" target-dir="java/com/adobe/phonegap/push/notifications/channels/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/notifications/channels/NotificationChannelType.java" target-dir="java/com/adobe/phonegap/push/notifications/channels/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/notifications/CallNotificationActionReceiver.java" target-dir="java/com/adobe/phonegap/push/notifications/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/notifications/CallNotificationService.java" target-dir="java/com/adobe/phonegap/push/notifications/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/notifications/IncomingRinger.java" target-dir="java/com/adobe/phonegap/push/notifications/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/notifications/NotificationBuilder.java" target-dir="java/com/adobe/phonegap/push/notifications/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/notifications/NotificationChannelManager.java" target-dir="java/com/adobe/phonegap/push/notifications/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/notifications/PEM.java" target-dir="java/com/adobe/phonegap/push/notifications/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/utils/CordovaCallbackContexts.java" target-dir="java/com/adobe/phonegap/push/utils/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/utils/Globals.java" target-dir="java/com/adobe/phonegap/push/utils/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/utils/RingtoneUtil.java" target-dir="java/com/adobe/phonegap/push/utils/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/utils/ServiceUtils.java" target-dir="java/com/adobe/phonegap/push/utils/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/utils/Tools.java" target-dir="java/com/adobe/phonegap/push/utils/"/>
     <source-file src="src/android/com/adobe/phonegap/push/PushConstants.kt" target-dir="java/com/adobe/phonegap/push/"/>
     <source-file src="src/android/com/adobe/phonegap/push/PushHandlerActivity.kt" target-dir="java/com/adobe/phonegap/push/"/>
     <source-file src="src/android/com/adobe/phonegap/push/BackgroundHandlerActivity.kt" target-dir="java/com/adobe/phonegap/push/"/>
@@ -106,8 +106,6 @@
     <source-file src="src/android/com/adobe/phonegap/push/PushPlugin.kt" target-dir="java/com/adobe/phonegap/push/"/>
     <source-file src="src/android/com/adobe/phonegap/push/BackgroundActionButtonHandler.kt" target-dir="java/com/adobe/phonegap/push/"/>
     <source-file src="src/android/com/adobe/phonegap/push/PushDismissedHandler.kt" target-dir="java/com/adobe/phonegap/push/"/>
-    <source-file src="src/android/com/adobe/phonegap/push/CordovaCall.java" target-dir="java/com/adobe/phonegap/push/"/>
-    <source-file src="src/android/com/adobe/phonegap/push/MyConnectionService.java" target-dir="java/com/adobe/phonegap/push/"/>
   </platform>
 
   <platform name="browser">
@@ -148,8 +146,6 @@
     <source-file src="src/ios/PushPlugin.m"/>
     <header-file src="src/ios/AppDelegate+notification.h"/>
     <header-file src="src/ios/PushPlugin.h"/>
-    <source-file src="src/ios/CordovaCall.m"/>
-    <source-file src="src/ios/AppDelegateCordovaCall.m"/>
 
     <framework src="PushKit.framework"/>
 

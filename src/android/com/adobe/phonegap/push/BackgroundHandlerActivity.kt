@@ -7,6 +7,9 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.core.app.RemoteInput
+import com.adobe.phonegap.push.firebase.MessagingService
+import com.adobe.phonegap.push.logs.Logger
+import com.adobe.phonegap.push.utils.ServiceUtils
 
 /**
  * Background Handler Activity
@@ -38,16 +41,16 @@ class BackgroundHandlerActivity : Activity() {
       val startOnBackground = extras.getBoolean(PushConstants.START_IN_BACKGROUND, false)
       val dismissed = extras.getBoolean(PushConstants.DISMISSED, false)
 
-      Log.d(TAG, "Not ID: $notId")
-      Log.d(TAG, "Callback: $callback")
-      Log.d(TAG, "Start In Background: $startOnBackground")
-      Log.d(TAG, "Dismissed: $dismissed")
+      Logger.Debug(TAG, "onCreate","Not ID: $notId")
+      Logger.Debug(TAG, "onCreate", "Callback: $callback ")
+      Logger.Debug(TAG, "onCreate", "Start In Background: $startOnBackground")
+      Logger.Debug(TAG, "onCreate", "Dismissed: $dismissed")
 
-      FCMService().setNotification(notId, "")
+      MessagingService().setNotification(notId, "")
 
       if (!startOnBackground) {
-        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.cancel(FCMService.getAppName(this), notId)
+        val notificationManager = ServiceUtils.getNotificationService()
+        notificationManager.cancel(MessagingService.getAppName(this), notId)
       }
 
       processPushBundle()
@@ -90,7 +93,7 @@ class BackgroundHandlerActivity : Activity() {
 
       RemoteInput.getResultsFromIntent(intent)?.apply {
         val reply = getCharSequence(PushConstants.INLINE_REPLY).toString()
-        Log.d(TAG, "Inline Reply: $reply")
+        Logger.Debug(TAG, "processPushBundle", "Inline Reply: $reply")
 
         originalExtras.putString(PushConstants.INLINE_REPLY, reply)
       }
@@ -126,7 +129,7 @@ class BackgroundHandlerActivity : Activity() {
   override fun onResume() {
     super.onResume()
 
-    val notificationManager = this.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+    val notificationManager = ServiceUtils.getNotificationService()
     notificationManager.cancelAll()
   }
 }

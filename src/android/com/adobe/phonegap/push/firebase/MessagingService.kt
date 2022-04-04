@@ -1,4 +1,4 @@
-package com.adobe.phonegap.push
+package com.adobe.phonegap.push.firebase
 
 import android.annotation.SuppressLint
 import android.app.Notification
@@ -18,10 +18,15 @@ import android.text.Spanned
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.RemoteInput
+import com.adobe.phonegap.push.*
 import com.adobe.phonegap.push.PushPlugin.Companion.isActive
 import com.adobe.phonegap.push.PushPlugin.Companion.isInForeground
 import com.adobe.phonegap.push.PushPlugin.Companion.sendExtras
-import com.adobe.phonegap.push.PushPlugin.Companion.setApplicationIconBadgeNumber
+import com.adobe.phonegap.push.logs.Logger
+import com.adobe.phonegap.push.notifications.CallNotificationService
+import com.adobe.phonegap.push.notifications.NotificationBuilder
+import com.adobe.phonegap.push.utils.ServiceUtils
+import com.adobe.phonegap.push.utils.Tools
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import org.json.JSONArray
@@ -33,15 +38,16 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.security.SecureRandom
 import java.util.*
+import java.lang.Exception
 
 /**
  * Firebase Cloud Messaging Service Class
  */
 @Suppress("HardCodedStringLiteral")
 @SuppressLint("NewApi", "LongLogTag", "LogConditional")
-class FCMService : FirebaseMessagingService() {
+class MessagingService : FirebaseMessagingService() {
   companion object {
-    private const val TAG = "${PushPlugin.PREFIX_TAG} (FCMService)"
+    private const val TAG = "${PushPlugin.PREFIX_TAG} (MessagingService)"
 
     private val messageMap = HashMap<Int, ArrayList<String?>>()
 
@@ -84,6 +90,75 @@ class FCMService : FirebaseMessagingService() {
     }
   }
 
+  fun showCall(data: Bundle) {
+    Log.d(TAG, "Launching call dialog")
+    try {
+
+      // Get params from Firebase payload
+      val params = data.getString("params")
+
+      // Convert to JSON
+      val jsonParams = JSONObject(params);
+      if (jsonParams != null) {
+
+        val extras = Bundle()
+
+        // Gather useful data from payload for call notification
+        extras.putString(PushConstants.EXTRA_TITLE, data.getString("text"))
+        try {
+          val consultant = jsonParams.getString("consultant")
+          if (!consultant.isNullOrEmpty()) {
+            extras.putString(PushConstants.EXTRA_DESCRIPTION, consultant)
+          }
+        } catch (e: Exception) {
+          Logger.Debug(TAG, "showCall", "Consultant name not found, trying to get consultantId")
+          try {
+            val consultantId = jsonParams.getInt("consultant_id")
+            if (consultantId != null) {
+              extras.putString(PushConstants.EXTRA_DESCRIPTION, "Consultant #$consultantId")
+            } else {
+              Logger.Debug(TAG, "showCall", "Invalid Consultant ID, giving up...")
+            }
+          } catch (e: Exception) {
+            Logger.Debug(TAG, "showCall", "Consultant ID not found, giving up...")
+          }
+        }
+        extras.putString(PushConstants.EXTRA_COLOR, data.getString("color"))
+        val consultationId = jsonParams.getInt("consultation_id")
+        extras.putInt(PushConstants.EXTRA_CONSULTATION_ID, consultationId)
+
+        /**
+         * Check if there's already a calling request
+         * Multiple calls are not supported, any subsequent call will be put on hold
+         */
+        if (CallNotificationService.isBusy) {
+          // Create Call on hold notification
+          CallNotificationService.createCallOnHold(extras)
+        } else {
+          // Delete any previous Call Request notification for this consultation
+          if (NotificationBuilder.notificationIds.containsKey(consultationId)) {
+            val notificationId = NotificationBuilder.notificationIds[consultationId]
+            if (notificationId != null) {
+              /**
+               * TODO: Fix this
+               * The previous awaiting call is not removed
+               */
+              ServiceUtils.getNotificationService().cancel(notificationId)
+            }
+          }
+          // Start service for Call Notification
+          val serviceIntent = Intent(this, CallNotificationService::class.java)
+          serviceIntent.putExtras(extras)
+          startService(serviceIntent)
+        }
+      } else {
+        Logger.Error(TAG, "showCall", "Invalid `params` in message body")
+      }
+    } catch (e: Exception) {
+      Log.e(TAG, "Error: " + e.stackTraceToString())
+    }
+  }
+
   /**
    * On Message Received
    */
@@ -103,18 +178,26 @@ class FCMService : FirebaseMessagingService() {
 
     for ((key, value) in message.data) {
       extras.putString(key, value)
+      Log.d(TAG, "$key --> $value")
     }
 
     if (isAvailableSender(from)) {
       val messageKey = pushSharedPref.getString(PushConstants.MESSAGE_KEY, PushConstants.MESSAGE)
       val titleKey = pushSharedPref.getString(PushConstants.TITLE_KEY, PushConstants.TITLE)
 
+      val messageType = extras.getString(PushConstants.TYPE_KEY, "")
+      // Show notification as calling (only for Android 8+)
+      if (messageType == PushConstants.CONSULTATION_CALL_REQUEST && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        this.showCall(extras)
+        return
+      }
+
       extras = normalizeExtras(extras, messageKey, titleKey)
 
       // Clear Badge
       val clearBadge = pushSharedPref.getBoolean(PushConstants.CLEAR_BADGE, false)
       if (clearBadge) {
-        setApplicationIconBadgeNumber(context, 0)
+        Tools.setApplicationIconBadgeNumber(0)
       }
 
       val inForeground = isInForeground()
@@ -220,12 +303,12 @@ class FCMService : FirebaseMessagingService() {
      */
     return when {
       key == PushConstants.BODY
-        || key == PushConstants.ALERT
-        || key == PushConstants.MP_MESSAGE
-        || key == PushConstants.GCM_NOTIFICATION_BODY
-        || key == PushConstants.TWILIO_BODY
-        || key == messageKey
-        || key == PushConstants.AWS_PINPOINT_BODY
+              || key == PushConstants.ALERT
+              || key == PushConstants.MP_MESSAGE
+              || key == PushConstants.GCM_NOTIFICATION_BODY
+              || key == PushConstants.TWILIO_BODY
+              || key == messageKey
+              || key == PushConstants.AWS_PINPOINT_BODY
       -> {
         PushConstants.MESSAGE
       }
@@ -386,12 +469,11 @@ class FCMService : FirebaseMessagingService() {
       val badgeCount = extractBadgeCount(extras)
 
       if (badgeCount >= 0) {
-        setApplicationIconBadgeNumber(context, badgeCount)
+        Tools.setApplicationIconBadgeNumber(badgeCount)
       }
 
       if (badgeCount == 0) {
-        val mNotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        mNotificationManager.cancelAll()
+        ServiceUtils.getNotificationService().cancelAll()
       }
 
       Log.d(TAG, "message=$message")
@@ -436,7 +518,7 @@ class FCMService : FirebaseMessagingService() {
   }
 
   private fun createNotification(extras: Bundle?) {
-    val mNotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+    val mNotificationManager = ServiceUtils.getNotificationService()
     val appName = getAppName(this)
     val notId = parseNotificationIdToInt(extras)
     val notificationIntent = Intent(this, PushHandlerActivity::class.java).apply {

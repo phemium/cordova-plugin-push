@@ -7,6 +7,9 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.core.app.RemoteInput
+import com.adobe.phonegap.push.firebase.MessagingService
+import com.adobe.phonegap.push.logs.Logger
+import com.adobe.phonegap.push.utils.ServiceUtils
 
 /**
  * Background Action Button Handler
@@ -24,14 +27,13 @@ class BackgroundActionButtonHandler : BroadcastReceiver() {
    */
   override fun onReceive(context: Context, intent: Intent) {
     val notId = intent.getIntExtra(PushConstants.NOT_ID, 0)
-    Log.d(TAG, "Not ID: $notId")
+    Logger.Debug(TAG, "onReceive", "Not ID: $notId")
 
-    val notificationManager =
-      context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-    notificationManager.cancel(FCMService.getAppName(context), notId)
+    val notificationManager = ServiceUtils.getNotificationService()
+    notificationManager.cancel(MessagingService.getAppName(context), notId)
 
     intent.extras?.let { extras ->
-      Log.d(TAG, "Intent Extras: $extras")
+      Logger.Debug(TAG, "onReceive", "Intent Extras: $extras")
       extras.getBundle(PushConstants.PUSH_BUNDLE)?.apply {
         putBoolean(PushConstants.FOREGROUND, false)
         putBoolean(PushConstants.COLDSTART, false)
@@ -42,7 +44,7 @@ class BackgroundActionButtonHandler : BroadcastReceiver() {
 
         RemoteInput.getResultsFromIntent(intent)?.let { remoteInputResults ->
           val results = remoteInputResults.getCharSequence(PushConstants.INLINE_REPLY).toString()
-          Log.d(TAG, "Inline Reply: $results")
+          Logger.Debug(TAG, "onReceive", "Inline Reply: $results")
 
           putString(PushConstants.INLINE_REPLY, results)
         }

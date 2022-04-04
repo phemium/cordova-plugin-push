@@ -8,6 +8,9 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.core.app.RemoteInput
+import com.adobe.phonegap.push.firebase.MessagingService
+import com.adobe.phonegap.push.logs.Logger
+import com.adobe.phonegap.push.utils.ServiceUtils
 
 /**
  * Push Handler Activity
@@ -39,11 +42,11 @@ class PushHandlerActivity : Activity() {
       val startOnBackground = extras.getBoolean(PushConstants.START_IN_BACKGROUND, false)
       val dismissed = extras.getBoolean(PushConstants.DISMISSED, false)
 
-      FCMService().setNotification(notId, "")
+      MessagingService().setNotification(notId, "")
 
       if (!startOnBackground) {
-        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.cancel(FCMService.getAppName(this), notId)
+        val notificationManager = ServiceUtils.getNotificationService()
+        notificationManager.cancel(MessagingService.getAppName(this), notId)
       }
 
       val notHaveInlineReply = processPushBundle()
@@ -52,25 +55,25 @@ class PushHandlerActivity : Activity() {
         foreground = true
       }
 
-      Log.d(TAG, "Not ID: $notId")
-      Log.d(TAG, "Callback: $callback")
-      Log.d(TAG, "Foreground: $foreground")
-      Log.d(TAG, "Start On Background: $startOnBackground")
-      Log.d(TAG, "Dismissed: $dismissed")
+      Logger.Debug(TAG, "onCreate", "Not ID: $notId")
+      Logger.Debug(TAG, "onCreate", "Callback: $callback")
+      Logger.Debug(TAG, "onCreate", "Foreground: $foreground")
+      Logger.Debug(TAG, "onCreate", "Start On Background: $startOnBackground")
+      Logger.Debug(TAG, "onCreate", "Dismissed: $dismissed")
 
       finish()
 
       if (!dismissed) {
-        Log.d(TAG, "Is Push Plugin Active: ${PushPlugin.isActive}")
+        Logger.Debug(TAG, "onCreate", "Is Push Plugin Active: ${PushPlugin.isActive}")
 
         if (!PushPlugin.isActive && foreground && notHaveInlineReply) {
-          Log.d(TAG, "Force Main Activity Reload: Start on Background = False")
+          Logger.Debug(TAG, "onCreate", "Force Main Activity Reload: Start on Background = False")
           forceMainActivityReload(false)
         } else if (startOnBackground) {
-          Log.d(TAG, "Force Main Activity Reload: Start on Background = True")
+          Logger.Debug(TAG, "onCreate", "Force Main Activity Reload: Start on Background = True")
           forceMainActivityReload(true)
         } else {
-          Log.d(TAG, "Don't Want Main Activity")
+          Logger.Debug(TAG, "onCreate", "Don't Want Main Activity")
         }
       }
     }
@@ -96,7 +99,7 @@ class PushHandlerActivity : Activity() {
 
         RemoteInput.getResultsFromIntent(intent)?.let { results ->
           val reply = results.getCharSequence(PushConstants.INLINE_REPLY).toString()
-          Log.d(TAG, "Inline Reply: $reply")
+          Logger.Debug(TAG, "processPushBundle", "Inline Reply: $reply")
 
           putString(PushConstants.INLINE_REPLY, reply)
           notHaveInlineReply = false
@@ -136,7 +139,7 @@ class PushHandlerActivity : Activity() {
   override fun onResume() {
     super.onResume()
 
-    val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+    val notificationManager = ServiceUtils.getNotificationService()
     notificationManager.cancelAll()
   }
 }

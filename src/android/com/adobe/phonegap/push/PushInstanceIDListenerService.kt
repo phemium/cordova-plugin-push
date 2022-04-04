@@ -2,6 +2,7 @@ package com.adobe.phonegap.push
 
 import android.annotation.SuppressLint
 import android.util.Log
+import com.adobe.phonegap.push.logs.Logger
 import com.google.firebase.iid.FirebaseInstanceId
 import com.google.firebase.messaging.FirebaseMessagingService
 
@@ -26,7 +27,7 @@ class PushInstanceIDListenerService : FirebaseMessagingService() {
       .addOnSuccessListener { instanceIdResult ->
         // Get updated InstanceID token.
         val refreshedToken = instanceIdResult.token
-        Log.d(TAG, "Refreshed token: $refreshedToken")
+        Logger.Debug(TAG, "onNewToken", "Refreshed token: $refreshedToken")
 
         // TODO: Implement this method to send any registration to your app's servers.
         //sendRegistrationToServer(refreshedToken);

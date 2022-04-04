@@ -5,6 +5,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import com.adobe.phonegap.push.firebase.MessagingService
+import com.adobe.phonegap.push.logs.Logger
 
 /**
  *
@@ -23,8 +25,8 @@ class PushDismissedHandler : BroadcastReceiver() {
   override fun onReceive(context: Context, intent: Intent) {
     if (intent.action == PushConstants.PUSH_DISMISSED) {
       val notID = intent.getIntExtra(PushConstants.NOT_ID, 0)
-      Log.d(TAG, "not id = $notID")
-      FCMService().setNotification(notID, "")
+      Logger.Debug(TAG, "onReceive", "not id = $notID")
+      MessagingService().setNotification(notID, "")
     }
   }
 }
