@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
   xmlns:android="http://schemas.android.com/apk/res/android"
-  id="@phemium-costaisa/cordova-plugin-push" version="3.0.2">
+  id="@phemium-costaisa/cordova-plugin-push" version="3.0.5">
 
   <name>Cordova Push Plugin</name>
   <description>Enable receiving push notifications on Android, iOS and Windows devices. Android uses Firebase Cloud Messaging. iOS uses Apple APNS Notifications. Windows uses Microsoft WNS Notifications.</description>
@@ -71,6 +71,7 @@
       <preference name="GradlePluginGoogleServicesVersion" value="4.3.8" />
 
       <preference name="GradlePluginKotlinEnabled" value="true" />
+      <preference name="GradlePluginKotlinCodeStyle" value="official" />
       <preference name="GradlePluginKotlinVersion" value="1.5.20" />
     </config-file>
 
@@ -82,23 +83,23 @@
     <framework src="com.google.firebase:firebase-messaging:$FCM_VERSION"/>
 
     <source-file src="src/android/com/adobe/phonegap/push/firebase/MessagingService.kt" target-dir="java/com/adobe/phonegap/push/firebase/"/>
-    <source-file src="src/android/com/adobe/phonegap/push/firebase/Topics.java" target-dir="java/com/adobe/phonegap/push/firebase/"/>
-    <source-file src="src/android/com/adobe/phonegap/push/logs/Logger.java" target-dir="java/com/adobe/phonegap/push/firebase/logs/"/>
-    <source-file src="src/android/com/adobe/phonegap/push/notifications/channels/CallChannel.java" target-dir="java/com/adobe/phonegap/push/notifications/channels/"/>
-    <source-file src="src/android/com/adobe/phonegap/push/notifications/channels/ICustomChannel.java" target-dir="java/com/adobe/phonegap/push/notifications/channels/"/>
-    <source-file src="src/android/com/adobe/phonegap/push/notifications/channels/MessageChannel.java" target-dir="java/com/adobe/phonegap/push/notifications/channels/"/>
-    <source-file src="src/android/com/adobe/phonegap/push/notifications/channels/NotificationChannelType.java" target-dir="java/com/adobe/phonegap/push/notifications/channels/"/>
-    <source-file src="src/android/com/adobe/phonegap/push/notifications/CallNotificationActionReceiver.java" target-dir="java/com/adobe/phonegap/push/notifications/"/>
-    <source-file src="src/android/com/adobe/phonegap/push/notifications/CallNotificationService.java" target-dir="java/com/adobe/phonegap/push/notifications/"/>
-    <source-file src="src/android/com/adobe/phonegap/push/notifications/IncomingRinger.java" target-dir="java/com/adobe/phonegap/push/notifications/"/>
-    <source-file src="src/android/com/adobe/phonegap/push/notifications/NotificationBuilder.java" target-dir="java/com/adobe/phonegap/push/notifications/"/>
-    <source-file src="src/android/com/adobe/phonegap/push/notifications/NotificationChannelManager.java" target-dir="java/com/adobe/phonegap/push/notifications/"/>
-    <source-file src="src/android/com/adobe/phonegap/push/notifications/PEM.java" target-dir="java/com/adobe/phonegap/push/notifications/"/>
-    <source-file src="src/android/com/adobe/phonegap/push/utils/CordovaCallbackContexts.java" target-dir="java/com/adobe/phonegap/push/utils/"/>
-    <source-file src="src/android/com/adobe/phonegap/push/utils/Globals.java" target-dir="java/com/adobe/phonegap/push/utils/"/>
-    <source-file src="src/android/com/adobe/phonegap/push/utils/RingtoneUtil.java" target-dir="java/com/adobe/phonegap/push/utils/"/>
-    <source-file src="src/android/com/adobe/phonegap/push/utils/ServiceUtils.java" target-dir="java/com/adobe/phonegap/push/utils/"/>
-    <source-file src="src/android/com/adobe/phonegap/push/utils/Tools.java" target-dir="java/com/adobe/phonegap/push/utils/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/firebase/Topics.kt" target-dir="java/com/adobe/phonegap/push/firebase/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/logs/Logger.kt" target-dir="java/com/adobe/phonegap/push/firebase/logs/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/notifications/channels/CallChannel.kt" target-dir="java/com/adobe/phonegap/push/notifications/channels/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/notifications/channels/ICustomChannel.kt" target-dir="java/com/adobe/phonegap/push/notifications/channels/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/notifications/channels/MessageChannel.kt" target-dir="java/com/adobe/phonegap/push/notifications/channels/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/notifications/channels/NotificationChannelType.kt" target-dir="java/com/adobe/phonegap/push/notifications/channels/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/notifications/CallNotificationActionReceiver.kt" target-dir="java/com/adobe/phonegap/push/notifications/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/notifications/CallNotificationService.kt" target-dir="java/com/adobe/phonegap/push/notifications/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/notifications/IncomingRinger.kt" target-dir="java/com/adobe/phonegap/push/notifications/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/notifications/NotificationBuilder.kt" target-dir="java/com/adobe/phonegap/push/notifications/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/notifications/NotificationChannelManager.kt" target-dir="java/com/adobe/phonegap/push/notifications/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/notifications/PEM.kt" target-dir="java/com/adobe/phonegap/push/notifications/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/utils/CordovaCallbackContexts.kt" target-dir="java/com/adobe/phonegap/push/utils/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/utils/Globals.kt" target-dir="java/com/adobe/phonegap/push/utils/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/utils/RingtoneUtil.kt" target-dir="java/com/adobe/phonegap/push/utils/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/utils/ServiceUtils.kt" target-dir="java/com/adobe/phonegap/push/utils/"/>
+    <source-file src="src/android/com/adobe/phonegap/push/utils/Tools.kt" target-dir="java/com/adobe/phonegap/push/utils/"/>
     <source-file src="src/android/com/adobe/phonegap/push/PushConstants.kt" target-dir="java/com/adobe/phonegap/push/"/>
     <source-file src="src/android/com/adobe/phonegap/push/PushHandlerActivity.kt" target-dir="java/com/adobe/phonegap/push/"/>
     <source-file src="src/android/com/adobe/phonegap/push/BackgroundHandlerActivity.kt" target-dir="java/com/adobe/phonegap/push/"/>

@@ -143,7 +143,7 @@ class MessagingService : FirebaseMessagingService() {
                * TODO: Fix this
                * The previous awaiting call is not removed
                */
-              ServiceUtils.getNotificationService().cancel(notificationId)
+              ServiceUtils.notificationService.cancel(notificationId)
             }
           }
           // Start service for Call Notification
@@ -197,7 +197,7 @@ class MessagingService : FirebaseMessagingService() {
       // Clear Badge
       val clearBadge = pushSharedPref.getBoolean(PushConstants.CLEAR_BADGE, false)
       if (clearBadge) {
-        Tools.setApplicationIconBadgeNumber(0)
+        Tools.applicationIconBadgeNumber = 0
       }
 
       val inForeground = isInForeground()
@@ -469,11 +469,11 @@ class MessagingService : FirebaseMessagingService() {
       val badgeCount = extractBadgeCount(extras)
 
       if (badgeCount >= 0) {
-        Tools.setApplicationIconBadgeNumber(badgeCount)
+        Tools.applicationIconBadgeNumber = badgeCount
       }
 
       if (badgeCount == 0) {
-        ServiceUtils.getNotificationService().cancelAll()
+        ServiceUtils.notificationService.cancelAll()
       }
 
       Log.d(TAG, "message=$message")
@@ -518,7 +518,7 @@ class MessagingService : FirebaseMessagingService() {
   }
 
   private fun createNotification(extras: Bundle?) {
-    val mNotificationManager = ServiceUtils.getNotificationService()
+    val mNotificationManager = ServiceUtils.notificationService
     val appName = getAppName(this)
     val notId = parseNotificationIdToInt(extras)
     val notificationIntent = Intent(this, PushHandlerActivity::class.java).apply {

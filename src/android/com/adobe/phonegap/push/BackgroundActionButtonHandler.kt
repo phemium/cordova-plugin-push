@@ -29,7 +29,7 @@ class BackgroundActionButtonHandler : BroadcastReceiver() {
     val notId = intent.getIntExtra(PushConstants.NOT_ID, 0)
     Logger.Debug(TAG, "onReceive", "Not ID: $notId")
 
-    val notificationManager = ServiceUtils.getNotificationService()
+    val notificationManager = ServiceUtils.notificationService
     notificationManager.cancel(MessagingService.getAppName(context), notId)
 
     intent.extras?.let { extras ->

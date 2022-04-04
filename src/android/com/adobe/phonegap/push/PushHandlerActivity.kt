@@ -45,7 +45,7 @@ class PushHandlerActivity : Activity() {
       MessagingService().setNotification(notId, "")
 
       if (!startOnBackground) {
-        val notificationManager = ServiceUtils.getNotificationService()
+        val notificationManager = ServiceUtils.notificationService
         notificationManager.cancel(MessagingService.getAppName(this), notId)
       }
 
@@ -139,7 +139,7 @@ class PushHandlerActivity : Activity() {
   override fun onResume() {
     super.onResume()
 
-    val notificationManager = ServiceUtils.getNotificationService()
+    val notificationManager = ServiceUtils.notificationService
     notificationManager.cancelAll()
   }
 }

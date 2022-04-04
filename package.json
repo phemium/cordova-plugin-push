@@ -1,6 +1,6 @@
 {
   "name": "@phemium-costaisa/cordova-plugin-push",
-  "version": "3.0.2",
+  "version": "3.0.5",
   "description": "Register and receive push notifications.",
   "scripts": {
     "build": "babel src/js --out-dir www",
@@ -11,7 +11,7 @@
     "precommit-msg": "echo 'Pre-commit checks...' && exit 0",
     "test": "npm run build && npm run lint && npm run jasmine"
   },
-  "repository": "github:havesource/cordova-plugin-push",
+  "repository": "github:phemium/cordova-plugin-push",
   "keywords": [
     "ecosystem:cordova",
     "cordova-ios",

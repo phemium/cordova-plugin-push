@@ -257,13 +257,13 @@ class PushPlugin : CordovaPlugin() {
     get() = activity.applicationContext
 
   @TargetApi(26)
-  private fun createDefaultNotificationChannelIfNeeded(options: JSONObject?) {
+  private fun createDefaultNotificationChannelIfNeeded() {
     // only call on Android O and above
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       val messageChannelId = NotificationChannelManager.createIfNeeded(MessageChannel().asJSON(), true)
-      MessageChannel.CHANNEL_ID = messageChannelId
+      MessageChannel.CHANNEL_ID = messageChannelId!!
       val callChannelId = NotificationChannelManager.createIfNeeded(CallChannel().asJSON(), true)
-      CallChannel.CHANNEL_ID = callChannelId
+      CallChannel.CHANNEL_ID = callChannelId!!
     }
   }
 
@@ -377,7 +377,7 @@ class PushPlugin : CordovaPlugin() {
         senderID = activity.getString(senderIdResId)
 
         // If no NotificationChannels exist create the default one
-        createDefaultNotificationChannelIfNeeded(initData)
+        createDefaultNotificationChannelIfNeeded()
 
         Log.v(TAG, formatLogMessage("JSONObject=$initData"))
         Log.v(TAG, formatLogMessage("senderID=$senderID"))
@@ -451,7 +451,7 @@ class PushPlugin : CordovaPlugin() {
           putBoolean(PushConstants.CLEAR_BADGE, clearBadge)
 
           if (clearBadge) {
-            Tools.setApplicationIconBadgeNumber(0)
+              Tools.applicationIconBadgeNumber = 0
           }
 
           /**
@@ -593,7 +593,7 @@ class PushPlugin : CordovaPlugin() {
 
       try {
         val badgeCount = data.getJSONObject(0).getInt(PushConstants.BADGE)
-        Tools.setApplicationIconBadgeNumber(badgeCount)
+          Tools.applicationIconBadgeNumber = badgeCount
       } catch (e: JSONException) {
         callbackContext.error(e.message)
       }
@@ -608,7 +608,7 @@ class PushPlugin : CordovaPlugin() {
     cordova.threadPool.execute {
       val language = data.getJSONObject(0).getString(PushConstants.LANGUAGE)
       Logger.Debug(TAG, "executeActionChangeLanguage", "Execute Change Language to $language")
-      Globals.setLanguage(language)
+      Globals.language = language
       callbackContext.success()
     }
   }
@@ -616,7 +616,7 @@ class PushPlugin : CordovaPlugin() {
   private fun executeActionGetIconBadgeNumber(callbackContext: CallbackContext) {
     cordova.threadPool.execute {
       Log.v(TAG, "Execute::GetIconBadgeNumber")
-      callbackContext.success(Tools.getApplicationIconBadgeNumber())
+      callbackContext.success(Tools.applicationIconBadgeNumber)
     }
   }
 
@@ -646,7 +646,7 @@ class PushPlugin : CordovaPlugin() {
    */
   override fun initialize(cordova: CordovaInterface, webView: CordovaWebView) {
     Globals.Initialize(cordova)
-    Globals.setLanguage("es")
+    Globals.language = "es"
     Logger.setDebug(true)
     super.initialize(cordova, webView)
     // cordovaCall.initialize(cordova, webView)
