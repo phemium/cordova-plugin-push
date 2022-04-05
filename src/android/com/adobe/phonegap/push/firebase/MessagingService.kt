@@ -59,7 +59,7 @@ class MessagingService : FirebaseMessagingService() {
     }
   }
 
-  fun onNewToken(token: String) {
+  override fun onNewToken(token: String) {
         Logger.Debug(TAG, "onNewToken", "Refreshed token: $token")
   }
 

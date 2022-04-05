@@ -296,7 +296,7 @@ class PushPlugin : CordovaPlugin() {
     Log.v(TAG, "Execute: Action = $action")
 
     gWebView = webView
-    currentActivity = cordova.activity
+    currentActivity = cordova.activity as AppCompatActivity
 
     when (action) {
       PushConstants.INITIALIZE -> executeActionInitialize(data, callbackContext)
