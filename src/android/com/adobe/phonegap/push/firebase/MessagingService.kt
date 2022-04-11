@@ -25,6 +25,7 @@ import com.adobe.phonegap.push.PushPlugin.Companion.sendExtras
 import com.adobe.phonegap.push.logs.Logger
 import com.adobe.phonegap.push.notifications.CallNotificationService
 import com.adobe.phonegap.push.notifications.NotificationBuilder
+import com.adobe.phonegap.push.notifications.channels.MessageChannel
 import com.adobe.phonegap.push.utils.ServiceUtils
 import com.adobe.phonegap.push.utils.Tools
 import com.google.firebase.messaging.FirebaseMessagingService
@@ -673,7 +674,7 @@ class MessagingService : FirebaseMessagingService() {
         channelID = if (channels.size == 1) {
           channels[0].id.toString()
         } else {
-          PushConstants.DEFAULT_CHANNEL_ID
+          MessageChannel.CHANNEL_ID
         }
 
         Log.d(TAG, "Using channel ID = $channelID")

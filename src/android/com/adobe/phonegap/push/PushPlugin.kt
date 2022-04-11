@@ -48,7 +48,7 @@ class PushPlugin : CordovaPlugin() {
 
     private val mCallbacks: MyActivityLifecycleCallbacks = MyActivityLifecycleCallbacks()
 
-    var currentActivity: AppCompatActivity? = null
+    var currentActivity: Activity? = null
 
     var gWebView: CordovaWebView? = null
     private val gCachedExtras = Collections.synchronizedList(ArrayList<Bundle>())
@@ -296,7 +296,7 @@ class PushPlugin : CordovaPlugin() {
     Log.v(TAG, "Execute: Action = $action")
 
     gWebView = webView
-    currentActivity = cordova.activity as AppCompatActivity
+    currentActivity = cordova.activity as Activity
 
     when (action) {
       PushConstants.INITIALIZE -> executeActionInitialize(data, callbackContext)
@@ -679,9 +679,9 @@ class PushPlugin : CordovaPlugin() {
       val activityName = activity.javaClass.simpleName
       LOG.d(TAG, "Resumed activity: $activityName")
       try {
-        currentActivity = activity as AppCompatActivity
+        currentActivity = activity
       } catch (e: Exception) {
-        LOG.e(TAG, "Unable to cast new activity as AppCompatActivity")
+        LOG.e(TAG, "Unable to cast new activity")
       }
     }
 
