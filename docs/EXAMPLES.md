@@ -1,15 +1,9 @@
-# Creating a Project From a Template
-
-If you want to get started with a sample project you can create a new project from the example template.
-
-```
-phonegap create my-app --template phonegap-template-push
-```
-
 ## Quick Example
 
 ```javascript
 const push = PushNotification.init({
+    enduserToken: '018b04061fcf01088b377a16e650780c9f49cc67',
+    environment: 'live',
 	android: {
 	},
     browser: {

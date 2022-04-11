@@ -133,58 +133,6 @@ var PushNotification = /*#__PURE__*/ (function () {
        */
     },
     {
-      key: "subscribe",
-      value: function subscribe(topic, successCallback) {
-        var errorCallback =
-          arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function () {};
-
-        if (typeof errorCallback !== "function") {
-          console.log("PushNotification.subscribe failure: failure parameter not a function");
-          return;
-        }
-
-        if (typeof successCallback !== "function") {
-          console.log(
-            "PushNotification.subscribe failure: success callback parameter must be a function"
-          );
-          return;
-        }
-
-        exec(successCallback, errorCallback, "PushNotification", "subscribe", [topic]);
-      },
-      /**
-       * unsubscribe to a topic
-       * @param   {String}      topic               topic to unsubscribe
-       * @param   {Function}    successCallback     success callback
-       * @param   {Function}    errorCallback       error callback
-       * @return  {void}
-       */
-    },
-    {
-      key: "unsubscribe",
-      value: function unsubscribe(topic, successCallback) {
-        var errorCallback =
-          arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function () {};
-
-        if (typeof errorCallback !== "function") {
-          console.log("PushNotification.unsubscribe failure: failure parameter not a function");
-          return;
-        }
-
-        if (typeof successCallback !== "function") {
-          console.log(
-            "PushNotification.unsubscribe failure: success callback parameter must be a function"
-          );
-          return;
-        }
-
-        exec(successCallback, errorCallback, "PushNotification", "unsubscribe", [topic]);
-      },
-      /**
-       * Call this to set the application icon badge
-       */
-    },
-    {
       key: "setApplicationIconBadgeNumber",
       value: function setApplicationIconBadgeNumber(successCallback) {
         var errorCallback =

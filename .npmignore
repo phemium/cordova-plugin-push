@@ -1,5 +1,6 @@
 .*
 docs
-example
 spec
 bower.json
+test
+node_modules

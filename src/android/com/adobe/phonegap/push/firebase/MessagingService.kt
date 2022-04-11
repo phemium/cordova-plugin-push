@@ -104,52 +104,71 @@ class MessagingService : FirebaseMessagingService() {
 
       // Convert to JSON
       val jsonParams = JSONObject(params);
+      if (jsonParams != null) {
 
-      val extras = Bundle()
+        val extras = Bundle()
 
-      // Gather useful data from payload for call notification
-      extras.putString(PushConstants.EXTRA_TITLE, data.getString("text"))
-      try {
-        val consultant = jsonParams.getString("consultant")
-        if (!consultant.isNullOrEmpty()) {
-          extras.putString(PushConstants.EXTRA_DESCRIPTION, consultant)
-        }
-      } catch (e: Exception) {
-        Logger.Debug(TAG, "showCall", "Consultant name not found, trying to get consultantId")
-        try {
+        // Gather useful data from payload for call notification
+        extras.putString(PushConstants.EXTRA_TITLE, data.getString("text"))
+
+        // Try to set call description
+        var description = data.getString("text")
+        if (jsonParams.has("consultant_id")) {
+          // Settting Consultant ID as first choice for description
           val consultantId = jsonParams.getInt("consultant_id")
-          extras.putString(PushConstants.EXTRA_DESCRIPTION, "Consultant #$consultantId")
-        } catch (e: Exception) {
-          Logger.Debug(TAG, "showCall", "Consultant ID not found, giving up...")
+          description = "Consultant #$consultantId"
         }
-      }
-      extras.putString(PushConstants.EXTRA_COLOR, data.getString("color"))
-      val consultationId = jsonParams.getInt("consultation_id")
-      extras.putInt(PushConstants.EXTRA_CONSULTATION_ID, consultationId)
-
-      /**
-       * Check if there's already a calling request
-       * Multiple calls are not supported, any subsequent call will be put on hold
-       */
-      if (CallNotificationService.isBusy) {
-        // Create Call on hold notification
-        CallNotificationService.createCallOnHold(context, extras)
-      } else {
-        // Delete any previous Call Request notification for this consultation
-        if (NotificationBuilder.notificationIds.containsKey(consultationId)) {
-          val notificationId = NotificationBuilder.notificationIds[consultationId]
-          if (notificationId != null) {
-            /**
-             * TODO: Fix this
-             * The previous awaiting call is not removed
-             */
-            ServiceUtils.notificationService(context).cancel(notificationId)
+        if (jsonParams.has("consultant_name")) {
+          // Get consultant name if exists with priority
+          val consultantName = jsonParams.getString("consultant_name")
+          if (!consultantName.isNullOrEmpty()) {
+            description = consultantName
+            // Try to retrieve service name
+            if (jsonParams.has("consultant_service")) {
+              val serviceName = jsonParams.getString("consultant_service")
+              if (!serviceName.isNullOrEmpty()) {
+                description += " - $serviceName"
+              }
+            }
           }
         }
-        // Start service for Call Notification
-        val serviceIntent = Intent(this, CallNotificationService::class.java)
-        serviceIntent.putExtras(extras)
-        startService(serviceIntent)
+        // Set call description
+        extras.putString(PushConstants.EXTRA_DESCRIPTION, description)
+        Logger.Debug(TAG, "showCall", "Call description: $description")
+
+        // Retrieve color
+        extras.putString(PushConstants.EXTRA_COLOR, data.getString("color"))
+
+        // Retrieve and set consultation ID
+        val consultationId = jsonParams.getInt("consultation_id")
+        extras.putInt(PushConstants.EXTRA_CONSULTATION_ID, consultationId)
+
+        /**
+         * Check if there's already a calling request
+         * Multiple calls are not supported, any subsequent call will be put on hold
+         */
+        if (CallNotificationService.isBusy) {
+          // Create Call on hold notification
+          CallNotificationService.createCallOnHold(extras)
+        } else {
+          // Delete any previous Call Request notification for this consultation
+          if (NotificationBuilder.notificationIds.containsKey(consultationId)) {
+            val notificationId = NotificationBuilder.notificationIds[consultationId]
+            if (notificationId != null) {
+              /**
+               * TODO: Fix this
+               * The previous awaiting call is not removed
+               */
+              ServiceUtils.notificationService.cancel(notificationId)
+            }
+          }
+          // Start service for Call Notification
+          val serviceIntent = Intent(this, CallNotificationService::class.java)
+          serviceIntent.putExtras(extras)
+          startService(serviceIntent)
+        }
+      } else {
+        Logger.Error(TAG, "showCall", "Invalid `params` in message body")
       }
     } catch (e: Exception) {
       Log.e(TAG, "Error: " + e.stackTraceToString())
