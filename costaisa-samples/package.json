@@ -1,0 +1,22 @@
+{
+  "name": "costaisa-samples",
+  "version": "1.0.0",
+  "description": "Samples of Costaisa",
+  "main": "keys.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/phemium/cordova-plugin-push.git"
+  },
+  "author": "Costaisa",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/phemium/cordova-plugin-push/issues"
+  },
+  "homepage": "https://github.com/phemium/cordova-plugin-push#readme",
+  "dependencies": {
+    "fcm-node": "^1.6.1"
+  }
+}

@@ -84,52 +84,6 @@ class PushNotification {
   }
 
   /**
-   * subscribe to a topic
-   * @param   {String}      topic               topic to subscribe
-   * @param   {Function}    successCallback     success callback
-   * @param   {Function}    errorCallback       error callback
-   * @return  {void}
-   */
-  subscribe(topic, successCallback, errorCallback = () => {}) {
-    if (typeof errorCallback !== "function") {
-      console.log("PushNotification.subscribe failure: failure parameter not a function");
-      return;
-    }
-
-    if (typeof successCallback !== "function") {
-      console.log(
-        "PushNotification.subscribe failure: success callback parameter must be a function"
-      );
-      return;
-    }
-
-    exec(successCallback, errorCallback, "PushNotification", "subscribe", [topic]);
-  }
-
-  /**
-   * unsubscribe to a topic
-   * @param   {String}      topic               topic to unsubscribe
-   * @param   {Function}    successCallback     success callback
-   * @param   {Function}    errorCallback       error callback
-   * @return  {void}
-   */
-  unsubscribe(topic, successCallback, errorCallback = () => {}) {
-    if (typeof errorCallback !== "function") {
-      console.log("PushNotification.unsubscribe failure: failure parameter not a function");
-      return;
-    }
-
-    if (typeof successCallback !== "function") {
-      console.log(
-        "PushNotification.unsubscribe failure: success callback parameter must be a function"
-      );
-      return;
-    }
-
-    exec(successCallback, errorCallback, "PushNotification", "unsubscribe", [topic]);
-  }
-
-  /**
    * Call this to set the application icon badge
    */
   setApplicationIconBadgeNumber(successCallback, errorCallback = () => {}, badge) {

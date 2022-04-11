@@ -23,9 +23,6 @@
 ## Installation Requirements
 
 | Plugin version | Cordova CLI | Cordova Android | Cordova iOS | CocoaPods |
-| -------------- | ----------- | --------------- | ----------- | --------- |
-| 1.0.0          | 10.0.0      | 8.0.0           | 5.1.1       | 1.8.0     |
-| 2.0.0          | 10.0.0      | 8.0.0           | 6.0.0       | 1.8.0     |
 | 3.0.0          | 10.0.0      | 9.0.0           | 6.0.0       | 1.8.0     |
 
 To install from the command line:
@@ -34,19 +31,9 @@ To install from the command line:
 cordova plugin add @phemium-costaisa/cordova-plugin-push
 ```
 
-It is also possible to install via repo url directly (unstable)
-
-or
-
-```bash
-cordova plugin add github:havesource/cordova-plugin-push
-```
-
 To configure the `SENDER_ID`, place your `google-services.json` (Android) and/or `GoogleService-Info.plist` in the root folder of your project and then add the following lines into your config.xml.
 
 In the `platform` tag for Android add the following `resource-file` tag if you are using `cordova-android` 8.0 or greater:
-
-E.g.
 
 ```xml
 <platform name="android">

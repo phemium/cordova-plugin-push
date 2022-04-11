@@ -392,44 +392,6 @@ describe('phonegap-plugin-push', () => {
       });
     });
 
-    describe('subscribe topic method', () => {
-      describe('cordova.exec', () => {
-        it('should call cordova.exec on next process tick', (done) => {
-          const push = PushNotification.init(options);
-          push.subscribe('foo', () => {}, () => {});
-          setTimeout(() => {
-            expect(execSpy).toHaveBeenCalledWith(
-              jasmine.any(Function),
-              jasmine.any(Function),
-              'PushNotification',
-              'subscribe',
-              jasmine.any(Object)
-            );
-            done();
-          }, 100);
-        });
-      });
-    });
-
-    describe('unsubscribe topic method', () => {
-      describe('cordova.exec', () => {
-        it('should call cordova.exec on next process tick', (done) => {
-          const push = PushNotification.init(options);
-          push.unsubscribe('foo', () => {}, () => {});
-          setTimeout(() => {
-            expect(execSpy).toHaveBeenCalledWith(
-              jasmine.any(Function),
-              jasmine.any(Function),
-              'PushNotification',
-              'unsubscribe',
-              jasmine.any(Object)
-            );
-            done();
-          }, 100);
-        });
-      });
-    });
-
     describe('clear notification method', () => {
       describe('cordova.exec', () => {
         it('should call cordova.exec on next process tick using number argument', (done) => {

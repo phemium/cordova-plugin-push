@@ -47,12 +47,6 @@
   - [push.unregister(successHandler, errorHandler, topics)](#pushunregistersuccesshandler-errorhandler-topics)
     - [Parameters](#parameters-7)
     - [Example](#example-9)
-  - [push.subscribe(topic, successHandler, errorHandler)](#pushsubscribetopic-successhandler-errorhandler)
-    - [Parameters](#parameters-8)
-    - [Example](#example-10)
-  - [push.unsubscribe(topic, successHandler, errorHandler)](#pushunsubscribetopic-successhandler-errorhandler)
-    - [Parameters](#parameters-9)
-    - [Example](#example-11)
   - [push.setApplicationIconBadgeNumber(successHandler, errorHandler, count) - iOS & Android only](#pushsetapplicationiconbadgenumbersuccesshandler-errorhandler-count---ios--android-only)
     - [Parameters](#parameters-10)
     - [Example](#example-12)
@@ -75,9 +69,11 @@
 
 Initializes the plugin on the native side.
 
-**Note:** like all plugins you must wait until you receive the [`deviceready`](https://cordova.apache.org/docs/en/5.4.0/cordova/events/events.deviceready.html) event before calling `PushNotification.init()`.
+**Note:** Like all plugins you must wait until you receive the [`deviceready`](https://cordova.apache.org/docs/en/5.4.0/cordova/events/events.deviceready.html) event before calling `PushNotification.init()`.
 
-**Note:** you will want to call `PushNotification.init()` each time your app starts. The remote push service can periodically reset your registration ID so this ensures you have the correct value.
+**Note:** You will want to call `PushNotification.init()` each time your app starts. The remote push service can periodically reset your registration ID so this ensures you have the correct value.
+
+**Note:** `[v3.0.1+]` Now supports multiple Cordova WebViews, therefore you can (and should) call `.init()` on every WebView your App uses PushPlugin. If you do not call `.init()` in a new WebView, this new one will be considered a background activity and notification events will not be routed to the new opened webview.
 
 ### Returns
 
@@ -90,6 +86,13 @@ Initializes the plugin on the native side.
 | `options` | `Object` | `{}`    | An object describing relevant specific options for all target platforms. |
 
 All available option attributes are described bellow. Currently, there are no Windows specific options.
+
+#### PEM Parameters (v3.0.12+)
+
+| Attribute      | Type     | Default      | Description                                                                                        |
+| -------------- | -------- | ------------ | -------------------------------------------------------------------------------------------------- |
+| `enduserToken` | `string` |              | Optional. The token string passed to PEM when openning a videocall activity from background.       |
+| `environment`  | `string` | `prerelease` | Optional. The environment string passed to PEM when openning a videocall activity from background. | 
 
 #### Android
 
@@ -142,7 +145,7 @@ First it is kind of a misnomer as GCM does not send push messages directly to de
 
 What happens is on the device side is that it registers with APNS, then that registration ID is sent to GCM which returns a different GCM specific ID. That is the ID you get from the push plugin `registration` event.
 
-When you send a message to GCM using that ID, what it does is look up the APNS registration ID on it's side and forward the message you sent to GCM on to APSN to deliver to your iOS device.
+When you send a message to GCM using that ID, what it does is look up the APNS registration ID on it's side and forward the message you sent to GCM on to APNS to deliver to your iOS device.
 
 Make sure that the certificate you build with matches your `fcmSandbox` value.
 
@@ -160,6 +163,10 @@ It is possible to receive VoIP Notifications in iOS that can execute the "notifi
 This type of notifications consist only of payload data, so the developer is the responsible of handling the event and do whatever the aplication should do when receiving one of them. The cordova-plugin-local-notifications is a good complement for the VoIP feature.
 
 In order to use the VoIP Notifications, you have to create a VoIP Services Certificate. There are a lot of tutorials on the web to achieve this. Once created, you must use this certificate in order to communicate with the APN Service.
+
+##### Important note
+
+There is a specific type of notification called CallRequest, which is not a real VoIP call but acts like it is. To use it just send the notification with parameter `type: CONSULTATION_CALL_REQUEST`
 
 To set up the VoIP Notification in iOS do:
 
@@ -191,6 +198,8 @@ The "finish" method has not use too when the VoIP notifications are enabled.
 
 ```javascript
 const push = PushNotification.init({
+  enduserToken: '018b04061fcf01088b377a16e650780c9f49cc67',
+  environment: 'live',
   android: {},
   browser: {
     pushServiceURL: 'http://push.api.phonegap.com/v1/push'
@@ -204,7 +213,7 @@ const push = PushNotification.init({
 });
 ```
 
-## PushNotification.hasPermission(successHandler)
+## `PushNotification.hasPermission(successHandler)`
 
 Checks whether the push notification permission has been granted.
 
@@ -232,7 +241,14 @@ PushNotification.hasPermission(data => {
 });
 ```
 
-## PushNotification.createChannel(successHandler, failureHandler, channel)
+# Notification channels
+
+Notification channels are a new feature from Android Oreo to know in which category/group a notifications pertain.
+
+### Important Note
+This plugin automatically manages his required channels, you do not need to create/edit/delete channels manually. Their main use is for debugging and occasional patches, as any change done manually will not be permanent.
+
+## `PushNotification.createChannel(successHandler, failureHandler, channel)`
 
 Create a new notification channel for Android O and above.
 
@@ -279,7 +295,7 @@ A default channel with the id "PushPluginChannel" is created automatically. To m
 | `visibility`                     | `Int`     | Sets whether notifications posted to this channel appear on the lockscreen or not, and if so, whether they appear in a redacted form. 0 = Private, 1 = Public, -1 = Secret.                                                         |
 | `lightColor`                     | `Int`     | Sets and enables the color of the notification light. The default value, `-1`, disables the notification light. (**Android Only**) |
 
-## PushNotification.deleteChannel(successHandler, failureHandler, channelId)
+## `PushNotification.deleteChannel(successHandler, failureHandler, channelId)`
 
 Delete a notification channel for Android O and above.
 
@@ -305,7 +321,7 @@ PushNotification.deleteChannel(
 );
 ```
 
-## PushNotification.listChannels(successHandler)
+## `PushNotification.listChannels(successHandler)`
 
 Returns a list of currently configured channels.
 
@@ -333,7 +349,7 @@ PushNotification.listChannels(channels => {
 });
 ```
 
-## push.on(event, callback)
+## `push.on(event, callback)`
 
 ### Parameters
 
@@ -342,7 +358,7 @@ PushNotification.listChannels(channels => {
 | `event`    | `string`   |         | Name of the event to listen to. See below for all the event names. |
 | `callback` | `Function` |         | Is called when the event is triggered.                             |
 
-## push.on('registration', callback)
+## `push.on('registration', callback)`
 
 The event `registration` will be triggered on each successful registration with the 3rd party push service.
 
@@ -378,7 +394,7 @@ E/PushPlugin(20077): execute: Got JSON Exception TIMEOUT
 
 It means you are running an older version of Google Play Services. You will need to open the Google Play Store app and update your version of Google Play Services.
 
-## push.on('notification', callback)
+## `push.on('notification', callback)`
 
 The event `notification` will be triggered each time a push notification is received by a 3rd party push service on the device.
 
@@ -412,7 +428,7 @@ push.on('notification', data => {
 
 Android quirk: Please note that some payloads may cause this event not to be always fired: [data vs notification payloads](https://github.com/phonegap/phonegap-plugin-push/blob/master/docs/PAYLOAD.md#notification-vs-data-payloads)
 
-## push.on('error', callback)
+## `push.on('error', callback)`
 
 The event `error` will trigger when an internal error occurs and the cache is aborted.
 
@@ -430,7 +446,7 @@ push.on('error', e => {
 });
 ```
 
-## push.off(event, callback)
+## `push.off(event, callback)`
 
 Removes a previously registered callback for an event.
 
@@ -448,16 +464,16 @@ const callback = data => {
   /*...*/
 };
 
-//Adding handler for notification event
+// Adding handler for notification event
 push.on('notification', callback);
 
-//Removing handler for notification event
+// Removing handler for notification event
 push.off('notification', callback);
 ```
 
 **WARNING**: As stated in the example, you will have to store your event handler if you are planning to remove it.
 
-## push.unregister(successHandler, errorHandler, topics)
+## `push.unregister(successHandler, errorHandler)`
 
 The unregister method is used when the application no longer wants to receive push notifications. Beware that this cleans up all event handlers previously registered, so you will need to reinitialize the plugin's API (through `.init()`) if you want them to function again without an application reload.
 
@@ -469,7 +485,6 @@ If you provide a list of topics as an optional parameter then the application wi
 | ---------------- | ---------- | ------- | --------------------------------------------------------------- |
 | `successHandler` | `Function` |         | Is called when the api successfully unregisters.                |
 | `errorHandler`   | `Function` |         | Is called when the api encounters an error while unregistering. |
-| `topics`         | `Array`    |         | A list of topics to unsubscribe from.                           |
 
 ### Example
 
@@ -484,59 +499,7 @@ push.unregister(
 );
 ```
 
-## push.subscribe(topic, successHandler, errorHandler)
-
-The subscribe method is used when the application wants to subscribe a new topic to receive push notifications.
-
-### Parameters
-
-| Parameter        | Type       | Default | Description                                                   |
-| ---------------- | ---------- | ------- | ------------------------------------------------------------- |
-| `topic`          | `String`   |         | Topic to subscribe to.                                        |
-| `successHandler` | `Function` |         | Is called when the api successfully subscribes.               |
-| `errorHandler`   | `Function` |         | Is called when the api encounters an error while subscribing. |
-
-### Example
-
-```javascript
-push.subscribe(
-  'my-topic',
-  () => {
-    console.log('success');
-  },
-  e => {
-    console.log('error:', e);
-  }
-);
-```
-
-## push.unsubscribe(topic, successHandler, errorHandler)
-
-The unsubscribe method is used when the application no longer wants to receive push notifications from a specific topic but continue to receive other push messages.
-
-### Parameters
-
-| Parameter        | Type       | Default | Description                                                     |
-| ---------------- | ---------- | ------- | --------------------------------------------------------------- |
-| `topic`          | `String`   |         | Topic to unsubscribe from.                                      |
-| `successHandler` | `Function` |         | Is called when the api successfully unsubscribe.                |
-| `errorHandler`   | `Function` |         | Is called when the api encounters an error while unsubscribing. |
-
-### Example
-
-```javascript
-push.unsubscribe(
-  'my-topic',
-  () => {
-    console.log('success');
-  },
-  e => {
-    console.log('error:', e);
-  }
-);
-```
-
-## push.setApplicationIconBadgeNumber(successHandler, errorHandler, count) - iOS & Android only
+## `push.setApplicationIconBadgeNumber(successHandler, errorHandler, count)` - iOS & Android only
 
 Set the badge count visible when the app is not running
 
@@ -564,7 +527,7 @@ push.setApplicationIconBadgeNumber(
 );
 ```
 
-## push.getApplicationIconBadgeNumber(successHandler, errorHandler) - iOS & Android only
+## `push.getApplicationIconBadgeNumber(successHandler, errorHandler)` - iOS & Android only
 
 Get the current badge count visible when the app is not running
 
@@ -596,7 +559,18 @@ push.getApplicationIconBadgeNumber(
 );
 ```
 
-## push.finish(successHandler, errorHandler, id) - iOS only
+## `push.finishCallRequest(successHandler, errorHandler)` - Android Only (iOS in development)
+
+Tells the Android plugin to finish a notification of type CallRequest, no ID is required as only 1 call request can be active at the same time.
+
+### Parameters
+
+| Parameter        | Type       | Default | Description                                                                                     |
+| ---------------- | ---------- | ------- | ----------------------------------------------------------------------------------------------- |
+| `successHandler` | `Function` |         | Is called when the api successfully finishes and closes the notification call request.                       |
+| `errorHandler`   | `Function` |         | Is called when the api encounters an error while processing and completing the notification call request. |
+
+## `push.finish(successHandler, errorHandler, id)` - iOS only
 
 Tells the OS that you are done processing a background push notification.
 
@@ -622,7 +596,7 @@ push.finish(
 );
 ```
 
-## push.clearAllNotifications(successHandler, errorHandler) - iOS & Android only
+## `push.clearAllNotifications(successHandler, errorHandler)` - iOS & Android only
 
 Tells the OS to clear all notifications from the Notification Center
 
@@ -646,7 +620,7 @@ push.clearAllNotifications(
 );
 ```
 
-## push.clearNotification(id, successHandler, errorHandler) - iOS & Android only
+## `push.clearNotification(id, successHandler, errorHandler)` - iOS & Android only
 
 Tells the OS to clear the notification that corresponds to the id argument, from the Notification Center
 
