@@ -149,7 +149,7 @@ class MessagingService : FirebaseMessagingService() {
          */
         if (CallNotificationService.isBusy) {
           // Create Call on hold notification
-          CallNotificationService.createCallOnHold(extras)
+          CallNotificationService.createCallOnHold(this, extras)
         } else {
           // Delete any previous Call Request notification for this consultation
           if (NotificationBuilder.notificationIds.containsKey(consultationId)) {
@@ -159,7 +159,7 @@ class MessagingService : FirebaseMessagingService() {
                * TODO: Fix this
                * The previous awaiting call is not removed
                */
-              ServiceUtils.notificationService.cancel(notificationId)
+              ServiceUtils.notificationService(this).cancel(notificationId)
             }
           }
           // Start service for Call Notification
