@@ -349,8 +349,8 @@ class PushPlugin : CordovaPlugin() {
       )
       var initData: JSONObject? = null
       var token: String? = null
-      var enduserToken: String? = null
-      var environment: String? = null
+      val enduserToken: String?
+      val environment: String?
       var senderID: String? = null
 
       try {
@@ -384,7 +384,7 @@ class PushPlugin : CordovaPlugin() {
         Log.v(TAG, formatLogMessage("senderID=$senderID"))
 
         try {
-          token = FirebaseInstanceId.getInstance().token
+          token = FirebaseInstanceId.getInstance().instanceId.toString()
         } catch (e: IllegalStateException) {
           Log.e(TAG, formatLogMessage("Firebase Token Exception ${e.message}"))
         }

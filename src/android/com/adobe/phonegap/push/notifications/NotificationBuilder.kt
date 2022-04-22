@@ -45,7 +45,7 @@ class NotificationBuilder @RequiresApi(api = Build.VERSION_CODES.O) constructor(
         return notificationBuilder.build()
     }
 
-    private lateinit var context: Context
+    private var context: Context
 
     fun getApplicationName(): String {
         val applicationInfo = context.applicationInfo

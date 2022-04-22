@@ -39,7 +39,7 @@ object Tools {
     fun wakeUpDevice(context: Context) {
         val mPowerManager = powerService(context)
         val wl = mPowerManager.newWakeLock(
-            PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP,
+            PowerManager.PARTIAL_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP,
             "pushplugin:wakelock"
         )
         wl.acquire(10*60*1000L /*10 minutes*/)

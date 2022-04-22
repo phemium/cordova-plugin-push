@@ -18,6 +18,7 @@ import android.text.Spanned
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.RemoteInput
+import androidx.core.text.HtmlCompat
 import com.adobe.phonegap.push.*
 import com.adobe.phonegap.push.PushPlugin.Companion.isActive
 import com.adobe.phonegap.push.PushPlugin.Companion.isInForeground
@@ -100,75 +101,70 @@ class MessagingService : FirebaseMessagingService() {
     try {
 
       // Get params from Firebase payload
-      val params = data.getString("params")
+      val params = data.getString("params")!!
 
       // Convert to JSON
       val jsonParams = JSONObject(params);
-      if (jsonParams != null) {
+      val extras = Bundle()
 
-        val extras = Bundle()
+      // Gather useful data from payload for call notification
+      extras.putString(PushConstants.EXTRA_TITLE, data.getString("text"))
 
-        // Gather useful data from payload for call notification
-        extras.putString(PushConstants.EXTRA_TITLE, data.getString("text"))
-
-        // Try to set call description
-        var description = data.getString("text")
-        if (jsonParams.has("consultant_id")) {
-          // Settting Consultant ID as first choice for description
-          val consultantId = jsonParams.getInt("consultant_id")
-          description = "Consultant #$consultantId"
-        }
-        if (jsonParams.has("consultant_name")) {
-          // Get consultant name if exists with priority
-          val consultantName = jsonParams.getString("consultant_name")
-          if (!consultantName.isNullOrEmpty()) {
-            description = consultantName
-            // Try to retrieve service name
-            if (jsonParams.has("consultant_service")) {
-              val serviceName = jsonParams.getString("consultant_service")
-              if (!serviceName.isNullOrEmpty()) {
-                description += " - $serviceName"
-              }
+      // Try to set call description
+      var description = data.getString("text")
+      if (jsonParams.has("consultant_id")) {
+        // Settting Consultant ID as first choice for description
+        val consultantId = jsonParams.getInt("consultant_id")
+        description = "Consultant #$consultantId"
+      }
+      if (jsonParams.has("consultant_name")) {
+        // Get consultant name if exists with priority
+        val consultantName = jsonParams.getString("consultant_name")
+        if (!consultantName.isNullOrEmpty()) {
+          description = consultantName
+          // Try to retrieve service name
+          if (jsonParams.has("consultant_service")) {
+            val serviceName = jsonParams.getString("consultant_service")
+            if (!serviceName.isNullOrEmpty()) {
+              description += " - $serviceName"
             }
           }
         }
-        // Set call description
-        extras.putString(PushConstants.EXTRA_DESCRIPTION, description)
-        Logger.Debug(TAG, "showCall", "Call description: $description")
+      }
+      // Set call description
+      extras.putString(PushConstants.EXTRA_DESCRIPTION, description)
+      Logger.Debug(TAG, "showCall", "Call description: $description")
 
-        // Retrieve color
-        extras.putString(PushConstants.EXTRA_COLOR, data.getString("color"))
+      // Retrieve color
+      extras.putString(PushConstants.EXTRA_COLOR, data.getString("color"))
 
-        // Retrieve and set consultation ID
-        val consultationId = jsonParams.getInt("consultation_id")
-        extras.putInt(PushConstants.EXTRA_CONSULTATION_ID, consultationId)
+      // Retrieve and set consultation ID
+      val consultationId = jsonParams.getInt("consultation_id")
+      extras.putInt(PushConstants.EXTRA_CONSULTATION_ID, consultationId)
 
-        /**
-         * Check if there's already a calling request
-         * Multiple calls are not supported, any subsequent call will be put on hold
-         */
-        if (CallNotificationService.isBusy) {
-          // Create Call on hold notification
-          CallNotificationService.createCallOnHold(this, extras)
-        } else {
-          // Delete any previous Call Request notification for this consultation
-          if (NotificationBuilder.notificationIds.containsKey(consultationId)) {
-            val notificationId = NotificationBuilder.notificationIds[consultationId]
-            if (notificationId != null) {
-              /**
-               * TODO: Fix this
-               * The previous awaiting call is not removed
-               */
-              ServiceUtils.notificationService(this).cancel(notificationId)
-            }
-          }
-          // Start service for Call Notification
-          val serviceIntent = Intent(this, CallNotificationService::class.java)
-          serviceIntent.putExtras(extras)
-          startService(serviceIntent)
-        }
+      /**
+       * Check if there's already a calling request
+       * Multiple calls are not supported, any subsequent call will be put on hold
+       */
+      if (CallNotificationService.isBusy) {
+        // Create Call on hold notification
+        CallNotificationService.createCallOnHold(this, extras)
       } else {
-        Logger.Error(TAG, "showCall", "Invalid `params` in message body")
+        // Delete any previous Call Request notification for this consultation
+        if (NotificationBuilder.notificationIds.containsKey(consultationId)) {
+          val notificationId = NotificationBuilder.notificationIds[consultationId]
+          if (notificationId != null) {
+            /**
+             * TODO: Fix this
+             * The previous awaiting call is not removed
+             */
+            ServiceUtils.notificationService(this).cancel(notificationId)
+          }
+        }
+        // Start service for Call Notification
+        val serviceIntent = Intent(this, CallNotificationService::class.java)
+        serviceIntent.putExtras(extras)
+        startService(serviceIntent)
       }
     } catch (e: Exception) {
       Log.e(TAG, "Error: " + e.stackTraceToString())
@@ -700,7 +696,7 @@ class MessagingService : FirebaseMessagingService() {
         NotificationCompat.Builder(context, channelID)
       }
     } else {
-      return NotificationCompat.Builder(context)
+      return NotificationCompat.Builder(context, "PushPlugin")
     }
   }
 
@@ -1263,7 +1259,7 @@ class MessagingService : FirebaseMessagingService() {
   }
 
   private fun fromHtml(source: String?): Spanned? {
-    return if (source != null) Html.fromHtml(source) else null
+    return if (source != null) HtmlCompat.fromHtml(source, HtmlCompat.FROM_HTML_MODE_LEGACY) else null
   }
 
   private fun isAvailableSender(from: String?): Boolean {

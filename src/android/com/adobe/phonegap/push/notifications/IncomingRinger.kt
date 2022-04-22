@@ -9,7 +9,10 @@ import android.media.AudioManager
 import com.adobe.phonegap.push.utils.ServiceUtils
 import android.media.AudioAttributes
 import android.net.Uri
+import android.os.Build
+import android.os.VibrationEffect
 import android.provider.Settings
+import androidx.annotation.RequiresApi
 import kotlin.Throws
 import com.adobe.phonegap.push.utils.RingtoneUtil
 import java.io.IOException
@@ -26,6 +29,7 @@ class IncomingRinger internal constructor(context: Context) {
     private val context: Context = context.applicationContext
     private val vibrator: Vibrator = ServiceUtils.vibratorService(context)
     private var player: MediaPlayer? = null
+    @RequiresApi(Build.VERSION_CODES.O)
     fun start(uri: Uri?, vibrate: Boolean) {
         val audioManager = ServiceUtils.audioService(context)
         if (player != null) {
@@ -37,7 +41,12 @@ class IncomingRinger internal constructor(context: Context) {
         val ringerMode = audioManager.ringerMode
         if (shouldVibrate(context, player, ringerMode, vibrate)) {
             Debug(TAG, "Vibration", "Starting")
-            vibrator.vibrate(VIBRATE_PATTERN, 1)
+            val vibrationEffect = VibrationEffect.createWaveform(VIBRATE_PATTERN, VibrationEffect.DEFAULT_AMPLITUDE)
+            val audioAttributes = AudioAttributes.Builder()
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+                .build()
+            vibrator.vibrate(vibrationEffect, audioAttributes)
         } else {
             Debug(TAG, "Vibration", "Skipping")
         }

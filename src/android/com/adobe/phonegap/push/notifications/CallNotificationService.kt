@@ -52,7 +52,7 @@ class CallNotificationService : Service() {
         try {
             // Create Notification Channel
             val channelId = NotificationChannelManager.createIfNeeded(this, CallChannel().asJSON(), false)
-            CallChannel.CHANNEL_ID = channelId!!
+            CallChannel.CHANNEL_ID = channelId
 
             // Create Notification
             val notification = NotificationBuilder(this, channelId, consultationId)
@@ -134,7 +134,7 @@ class CallNotificationService : Service() {
             // Create Notification Channel
             val channelId =
                 NotificationChannelManager.createIfNeeded(context, MessageChannel().asJSON(), false)
-            CallChannel.CHANNEL_ID = channelId!!
+            CallChannel.CHANNEL_ID = channelId
 
             // Create Notification
             val notification =
