@@ -13,7 +13,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.text.Html
 import android.text.Spanned
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -39,8 +38,6 @@ import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.security.SecureRandom
-import java.util.*
-import java.lang.Exception
 
 /**
  * Firebase Cloud Messaging Service Class
@@ -59,10 +56,19 @@ class MessagingService : FirebaseMessagingService() {
     fun getAppName(context: Context): String {
       return context.packageManager.getApplicationLabel(context.applicationInfo) as String
     }
+
+    fun getToken(context: Context): String? {
+      return context.getSharedPreferences(PushConstants.COM_ADOBE_PHONEGAP_PUSH, MODE_PRIVATE).getString("fcmToken", null)
+    }
   }
 
-  override fun onNewToken(token: String) {
-        Logger.Debug(TAG, "onNewToken", "Refreshed token: $token")
+  override fun onNewToken(s: String?) {
+    super.onNewToken(s)
+    Log.d(TAG, "Received new token: $s")
+    getSharedPreferences(
+      PushConstants.COM_ADOBE_PHONEGAP_PUSH,
+      Context.MODE_PRIVATE
+    ).edit().putString("fcmToken", s).apply()
   }
 
   private val context: Context

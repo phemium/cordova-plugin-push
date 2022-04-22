@@ -41,12 +41,7 @@ class IncomingRinger internal constructor(context: Context) {
         val ringerMode = audioManager.ringerMode
         if (shouldVibrate(context, player, ringerMode, vibrate)) {
             Debug(TAG, "Vibration", "Starting")
-            val vibrationEffect = VibrationEffect.createWaveform(VIBRATE_PATTERN, VibrationEffect.DEFAULT_AMPLITUDE)
-            val audioAttributes = AudioAttributes.Builder()
-                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
-                .build()
-            vibrator.vibrate(vibrationEffect, audioAttributes)
+            vibrator.vibrate(VibrationEffect.createWaveform(VIBRATE_PATTERN, 1))
         } else {
             Debug(TAG, "Vibration", "Skipping")
         }

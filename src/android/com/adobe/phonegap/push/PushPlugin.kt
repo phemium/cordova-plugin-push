@@ -15,8 +15,8 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
+import com.adobe.phonegap.push.firebase.MessagingService
 import com.adobe.phonegap.push.logs.Logger
 import com.adobe.phonegap.push.notifications.*
 import com.adobe.phonegap.push.notifications.channels.CallChannel
@@ -384,7 +384,7 @@ class PushPlugin : CordovaPlugin() {
         Log.v(TAG, formatLogMessage("senderID=$senderID"))
 
         try {
-          token = FirebaseInstanceId.getInstance().instanceId.toString()
+          token = MessagingService.getToken(applicationContext)
         } catch (e: IllegalStateException) {
           Log.e(TAG, formatLogMessage("Firebase Token Exception ${e.message}"))
         }
