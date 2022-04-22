@@ -1,6 +1,6 @@
 # Change Log
 
-## 3.0.15
+## 3.0.16
 
 - Fixed some Kotlin warnings
 
