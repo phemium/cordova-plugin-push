@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.0.17
+
+- Add RequiresApi to some notification util functions
+
 ## 3.0.16
 
 - Fixed some Kotlin warnings

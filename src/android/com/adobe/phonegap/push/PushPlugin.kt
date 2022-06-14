@@ -259,7 +259,7 @@ class PushPlugin : CordovaPlugin() {
   val applicationContext: Context
     get() = activity.applicationContext
 
-  @TargetApi(26)
+  @RequiresApi(Build.VERSION_CODES.O)
   private fun createDefaultNotificationChannelIfNeeded() {
     // only call on Android O and above
     val messageChannelId = NotificationChannelManager.createIfNeeded(applicationContext, MessageChannel().asJSON(), true)
@@ -378,7 +378,9 @@ class PushPlugin : CordovaPlugin() {
         senderID = activity.getString(senderIdResId)
 
         // If no NotificationChannels exist create the default one
-        createDefaultNotificationChannelIfNeeded()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+          createDefaultNotificationChannelIfNeeded()
+        }
 
         Log.v(TAG, formatLogMessage("JSONObject=$initData"))
         Log.v(TAG, formatLogMessage("senderID=$senderID"))
