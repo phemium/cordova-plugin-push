@@ -7,6 +7,7 @@ import android.app.Activity
 import android.app.ActivityManager
 import android.app.ActivityManager.RunningAppProcessInfo
 import android.app.Application.ActivityLifecycleCallbacks
+import android.app.Application.MODE_PRIVATE
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -263,6 +264,11 @@ class PushPlugin : CordovaPlugin() {
   private fun createDefaultNotificationChannelIfNeeded() {
     // only call on Android O and above
     val messageChannelId = NotificationChannelManager.createIfNeeded(applicationContext, MessageChannel().asJSON(), true)
+    val prefs = applicationContext.getSharedPreferences("CHANNELS", MODE_PRIVATE) ?: return
+    with (prefs.edit()) {
+      putString("MESSAGES_CHANNEL_ID", messageChannelId)
+      apply()
+    }
     MessageChannel.CHANNEL_ID = messageChannelId
     val callChannelId = NotificationChannelManager.createIfNeeded(applicationContext, CallChannel().asJSON(), true)
     CallChannel.CHANNEL_ID = callChannelId

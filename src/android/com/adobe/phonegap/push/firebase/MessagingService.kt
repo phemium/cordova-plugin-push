@@ -692,14 +692,15 @@ class MessagingService : FirebaseMessagingService() {
       } else {
         val channels = notificationManager.notificationChannels
 
-        channelID = if (channels.size == 1) {
+        channelID = if (channels.size >= 1) {
           channels[0].id.toString()
         } else {
-          MessageChannel.CHANNEL_ID
+          val prefs = applicationContext.getSharedPreferences("CHANNELS", MODE_PRIVATE)
+          prefs.getString("MESSAGES_CHANNEL_ID", MessageChannel.CHANNEL_ID)
         }
 
         Log.d(TAG, "Using channel ID = $channelID")
-        NotificationCompat.Builder(context, channelID)
+        NotificationCompat.Builder(context, channelID!!)
       }
     } else {
       return NotificationCompat.Builder(context, "PushPlugin")

@@ -1,5 +1,10 @@
 # Change Log
 
+## 3.0.19
+
+- Remove new call code
+- Fix message channel ID not being correctly retrieved when App is closed
+
 ## 3.0.16
 
 - Fixed some Kotlin warnings
