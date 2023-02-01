@@ -205,7 +205,7 @@ class MessagingService : FirebaseMessagingService() {
 
       val messageType = extras.getString(PushConstants.TYPE_KEY, "")
       // Show notification as calling (only for Android 8+)
-      if (messageType == PushConstants.CONSULTATION_CALL_REQUEST && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      if (messageType == PushConstants.CONSULTATION_CALL_REQUEST && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !PushPlugin.getCurrentActivityName().contains("PhemiumEnduser")) {
         this.showCall(extras)
         return
       }

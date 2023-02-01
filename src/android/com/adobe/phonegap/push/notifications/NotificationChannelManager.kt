@@ -32,6 +32,7 @@ object NotificationChannelManager {
      * Automatically creates a Notification Channel with the given specs
      * @param force
      */
+    @RequiresApi(Build.VERSION_CODES.O)
     fun createIfNeeded(context: Context, params: Bundle, force: Boolean): String {
         Debug(TAG, "createIfNeeded", "Channel: " + params.getString("id"))
         val notificationManager = ServiceUtils.notificationService(context)

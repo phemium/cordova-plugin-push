@@ -1,30 +1,19 @@
-const FCM = require('fcm-node');
-const { API_KEY, DEVICE_ID } = require('./keys');
-const fcm = new FCM(API_KEY);
+const { sendNotification, constructPayload } = require("./functions");
 
-const message = {
-    to: DEVICE_ID,
-    priority: 'high',
-    content_available: true,
-    data: {
-        params: {
-            consultation_id: 1786,
-            consultant_name: "Celia Creu",
-            consultant_service: "Cardiología",
-            consultant_id: 6369,
-            phemium: true
-        },
-        text: "Llamada entrante",
-        type: "CONSULTATION_CALL_REQUEST",
-        color: "green"
-    }
-};
-
-fcm.send(message, (err, response) => {
-  if (err) {
-    console.log(err);
-    console.log('Something has gone wrong!');
-  } else {
-    console.log('Successfully sent with response: ', response);
-  }
+const message = constructPayload({
+  params: {
+    consultation_id: 5033,
+    consultant_name: "Phemium Support Service",
+    consultant_service: "Cardiología",
+    consultant_id: 6369,
+    phemium: true,
+  },
+  text: "Llamada entrante",
+  type: "CONSULTATION_CALL_REQUEST",
+  color: "green",
+  title: "Notification Test",
+  message: "Esto es una prueba de llamada",
+  body: "Esto es una prueba de llamada",
 });
+
+sendNotification(message);
