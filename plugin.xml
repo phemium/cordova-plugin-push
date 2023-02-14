@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
   xmlns:android="http://schemas.android.com/apk/res/android"
-  id="@phemium-costaisa/cordova-plugin-push" version="3.0.19">
+  id="@phemium-costaisa/cordova-plugin-push" version="3.0.20">
 
   <name>Cordova Push Plugin</name>
   <description>Enable receiving push notifications on Android, iOS and Windows devices. Android uses Firebase Cloud Messaging. iOS uses Apple APNS Notifications. Windows uses Microsoft WNS Notifications.</description>
@@ -50,7 +50,7 @@
       <receiver android:name="com.adobe.phonegap.push.PushDismissedHandler"/>
       <receiver android:name="com.adobe.phonegap.push.notifications.CallNotificationActionReceiver"/>
 
-      <service android:name="com.adobe.phonegap.push.firebase.MessagingService">
+      <service android:exported="true" android:name="com.adobe.phonegap.push.firebase.MessagingService">
         <intent-filter>
           <action android:name="com.google.firebase.MESSAGING_EVENT"/>
         </intent-filter>
