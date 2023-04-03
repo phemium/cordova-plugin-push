@@ -2,8 +2,7 @@
  * Put here the Server API Key for the corresponding application package
  * Can be obtained from Firebase Devel account in Project Settings --> Cloud Messaging --> Cloud Messaging API --> Server Key
  */
-const API_KEY =
-  "AAAASrGnDNQ:APA91bENOcBCpbBjKN60uPfoEl9HBnoIERTlpu58ls6TZUcBWvBYoG_i0yQC2FNz50kDv9nk3zY0kbJH-1rfb0ihUzlOgjAX9Q-yWktAJ6F2Ypb3pg-l1DcDUflvmivtPleYpT8UMog1";
+const API_KEY = "";
 
 /**
  * Put here the Device unique ID, commonly known as the FCM Token
