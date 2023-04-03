@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
   xmlns:android="http://schemas.android.com/apk/res/android"
-  id="@phemium-costaisa/cordova-plugin-push" version="3.0.20">
+  id="@phemium-costaisa/cordova-plugin-push" version="3.0.21">
 
   <name>Cordova Push Plugin</name>
   <description>Enable receiving push notifications on Android, iOS and Windows devices. Android uses Firebase Cloud Messaging. iOS uses Apple APNS Notifications. Windows uses Microsoft WNS Notifications.</description>
@@ -35,6 +35,7 @@
         <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
         <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
         <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+        <uses-permission android:name="android.permission.BROADCAST_CLOSE_SYSTEM_DIALOGS" />
     </config-file>
 
     <config-file target="AndroidManifest.xml" parent="/manifest/application">

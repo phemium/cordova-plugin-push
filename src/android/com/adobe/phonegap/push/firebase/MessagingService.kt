@@ -550,7 +550,7 @@ class MessagingService : FirebaseMessagingService() {
       this,
       requestCode,
       notificationIntent,
-      PendingIntent.FLAG_UPDATE_CURRENT
+      PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
     val dismissedNotificationIntent = Intent(
       this,
@@ -569,7 +569,7 @@ class MessagingService : FirebaseMessagingService() {
       this,
       requestCode,
       dismissedNotificationIntent,
-      PendingIntent.FLAG_CANCEL_CURRENT
+      PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
 
     val mBuilder: NotificationCompat.Builder =
@@ -779,7 +779,7 @@ class MessagingService : FirebaseMessagingService() {
                   this,
                   uniquePendingIntentRequestCode,
                   intent,
-                  PendingIntent.FLAG_ONE_SHOT
+                  PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
                 )
               } else {
                 Log.d(TAG, "push receiver for notId $notId")
@@ -788,7 +788,7 @@ class MessagingService : FirebaseMessagingService() {
                   this,
                   uniquePendingIntentRequestCode,
                   intent,
-                  PendingIntent.FLAG_ONE_SHOT
+                  PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
                 )
               }
             }
@@ -799,7 +799,7 @@ class MessagingService : FirebaseMessagingService() {
               pIntent = PendingIntent.getActivity(
                 this, uniquePendingIntentRequestCode,
                 intent,
-                PendingIntent.FLAG_UPDATE_CURRENT
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
               )
             }
 
@@ -809,7 +809,7 @@ class MessagingService : FirebaseMessagingService() {
               pIntent = PendingIntent.getBroadcast(
                 this, uniquePendingIntentRequestCode,
                 intent,
-                PendingIntent.FLAG_UPDATE_CURRENT
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
               )
             }
           }
@@ -902,7 +902,7 @@ class MessagingService : FirebaseMessagingService() {
       for (i in items.indices) {
         try {
           results[i] = items[i].trim { it <= ' ' }.toLong()
-        } catch (nfe: NumberFormatException) {
+        } catch (_: NumberFormatException) {
         }
       }
       mBuilder.setVibrate(results)

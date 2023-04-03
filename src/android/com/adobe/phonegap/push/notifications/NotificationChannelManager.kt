@@ -18,6 +18,7 @@ import java.util.*
 object NotificationChannelManager {
     private val TAG = PushPlugin.PREFIX_TAG + NotificationChannelManager::class.java
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun list(context: Context): List<NotificationChannel> {
         return ServiceUtils.notificationService(context).notificationChannels
     }

@@ -115,7 +115,7 @@ class PushPlugin : CordovaPlugin() {
         context,
         1204,
         intent,
-        PendingIntent.FLAG_UPDATE_CURRENT
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
       )
       val notification = NotificationBuilder(context, MessageChannel.CHANNEL_ID, extras.getInt(PushConstants.EXTRA_CONSULTATION_ID))
       notification.setTitle("Llamada perdida")
