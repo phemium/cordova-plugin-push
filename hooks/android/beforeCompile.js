@@ -1,8 +1,6 @@
 const { join } = require("path");
 const { existsSync, readFileSync, writeFileSync } = require("fs");
-const {
-  parseElementtreeSync: ParseElementtreeSync,
-} = require("cordova-common/src/util/xml-helpers");
+const { parseElementtreeSync } = require("cordova-common/src/util/xml-helpers");
 const platform = require("cordova-android");
 
 module.exports = function (context) {
@@ -31,7 +29,7 @@ function isExecutable() {
 }
 
 function getPluginKotlinVersion(context) {
-  const pluginConfig = new ParseElementtreeSync(
+  const pluginConfig = parseElementtreeSync(
     join(context.opts.projectRoot, "plugins/@phemium-costaisa/cordova-plugin-push/plugin.xml")
   );
 
