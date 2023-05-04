@@ -9,6 +9,8 @@ import androidx.core.app.RemoteInput
 import com.adobe.phonegap.push.firebase.MessagingService
 import com.adobe.phonegap.push.logs.Logger
 import com.adobe.phonegap.push.utils.ServiceUtils
+import com.phemium.plugins.PhemiumEnduserActivity
+import org.json.JSONObject
 
 /**
  * Push Handler Activity
@@ -71,6 +73,25 @@ class PushHandlerActivity : Activity() {
           Logger.Debug(TAG, "onCreate", "Force Main Activity Reload: Start on Background = True")
           forceMainActivityReload(true)
         } else {
+          if (PhemiumEnduserActivity.current != null) {
+            try {
+              var url_params = PhemiumEnduserActivity.current.intent.extras?.getString("url_params")
+              if (url_params != null) {
+                val bundleExtras = intent.extras!!.getBundle("pushBundle")!!.getString("params");
+                val params = JSONObject(bundleExtras.toString())
+                if (params.has("consultation_id")) {
+                  val consultationId = params.getString("consultation_id");
+
+                  url_params = url_params.replace("consultation_id\\=([0-9]+)".toRegex(), "consultation_id=" + consultationId)
+
+                  val script = "window.App.onNewParameters('$url_params');"
+                  PhemiumEnduserActivity.current.loadJavaScript(script)
+                }
+              }
+            } catch (e: Exception) {
+              Logger.Error(TAG, "onCreate Error", e.message.toString())
+            }
+          }
           Logger.Debug(TAG, "onCreate", "Don't Want Main Activity")
         }
       }
