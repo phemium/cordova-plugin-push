@@ -9,7 +9,9 @@ import androidx.core.app.RemoteInput
 import com.adobe.phonegap.push.firebase.MessagingService
 import com.adobe.phonegap.push.logs.Logger
 import com.adobe.phonegap.push.utils.ServiceUtils
+// BEGIN PEM
 import com.phemium.plugins.PhemiumEnduserActivity
+// END PEM
 import org.json.JSONObject
 
 /**
@@ -73,6 +75,7 @@ class PushHandlerActivity : Activity() {
           Logger.Debug(TAG, "onCreate", "Force Main Activity Reload: Start on Background = True")
           forceMainActivityReload(true)
         } else {
+          // BEGIN PEM
           if (PhemiumEnduserActivity.current != null) {
             try {
               var url_params = PhemiumEnduserActivity.current.intent.extras?.getString("url_params")
@@ -81,9 +84,7 @@ class PushHandlerActivity : Activity() {
                 val params = JSONObject(bundleExtras.toString())
                 if (params.has("consultation_id")) {
                   val consultationId = params.getString("consultation_id");
-
                   url_params = url_params.replace("consultation_id\\=([0-9]+)".toRegex(), "consultation_id=" + consultationId)
-
                   val script = "window.App.onNewParameters('$url_params');"
                   PhemiumEnduserActivity.current.loadJavaScript(script)
                 }
@@ -92,6 +93,7 @@ class PushHandlerActivity : Activity() {
               Logger.Error(TAG, "onCreate Error", e.message.toString())
             }
           }
+          // END PEM
           Logger.Debug(TAG, "onCreate", "Don't Want Main Activity")
         }
       }
@@ -132,6 +134,7 @@ class PushHandlerActivity : Activity() {
   }
 
   private fun forceMainActivityReload(startOnBackground: Boolean) {
+    Logger.Debug(TAG, "forceMainActivityReload", startOnBackground.toString())
     /*
      * Forces the main activity to re-launch if it's unloaded.
      */
