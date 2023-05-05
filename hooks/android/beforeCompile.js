@@ -7,9 +7,6 @@ const _glob = require("glob");
 const glob = promisify(_glob);
 
 module.exports = async function (context) {
-  context = {};
-  context.opts = {};
-  context.opts.projectRoot = "/Users/alex/Documents/Projects/cigna/cigna-web-app/src";
   await configurePEM(context);
   if (!isExecutable()) {
     console.log("[cordova-plugin-push::before-compile] skipping before_compile hookscript.");
