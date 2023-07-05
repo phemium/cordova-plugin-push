@@ -34,8 +34,8 @@
     "jasmine": "^3.9.0",
     "nodemon": "^2.0.12",
     "nopt": "^5.0.0",
-    "xml2js": "^0.4.23",
-    "search-in-file": "^2.2.2"
+    "search-in-file": "^2.2.2",
+    "xml2js": "^0.4.23"
   },
   "engines": {
     "cordovaDependencies": {
