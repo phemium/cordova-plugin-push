@@ -11,7 +11,9 @@ import android.os.Bundle
 import com.adobe.phonegap.push.PushConstants
 import android.content.Context
 import com.adobe.phonegap.push.utils.ServiceUtils
+// BEGIN PEM
 import com.phemium.plugins.PhemiumEnduserActivity
+// END PEM
 
 class CallNotificationActionReceiver : BroadcastReceiver() {
     private val TAG = PushPlugin.PREFIX_TAG + " (Receiver)"
@@ -59,6 +61,7 @@ class CallNotificationActionReceiver : BroadcastReceiver() {
      * @param context
      */
     private fun openEnduser(context: Context, extras: Bundle?) {
+        // BEGIN PEM
         val intent = Intent(context, PhemiumEnduserActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         intent.putExtra(
@@ -66,6 +69,7 @@ class CallNotificationActionReceiver : BroadcastReceiver() {
             PEM.getEnduserParamsForChat(extras!!.getInt(PushConstants.EXTRA_CONSULTATION_ID))
         )
         context.startActivity(intent)
+        // END PEM
     }
 
     /**
@@ -77,6 +81,7 @@ class CallNotificationActionReceiver : BroadcastReceiver() {
      * - false -> Deny call
      */
     private fun openEnduserCall(context: Context, extras: Bundle?, acceptCall: Boolean?) {
+        // BEGIN PEM
         val intent = Intent(context, PhemiumEnduserActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         intent.putExtra(
@@ -87,5 +92,6 @@ class CallNotificationActionReceiver : BroadcastReceiver() {
             )
         )
         context.startActivity(intent)
+        // END PEM
     }
 }
