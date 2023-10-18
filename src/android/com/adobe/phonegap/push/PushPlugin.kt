@@ -1,6 +1,8 @@
 package com.adobe.phonegap.push
 
 import android.R
+import android.Manifest
+import android.content.pm.PackageManager
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.Activity
@@ -44,13 +46,18 @@ class PushPlugin : CordovaPlugin() {
     const val PREFIX_TAG: String = "cordova-plugin-push"
     private const val TAG: String = "$PREFIX_TAG (PushPlugin)"
 
+
+    private const val REQ_CODE_INITIALIZE_PLUGIN = 0
+
+
+
     var language: String = "es"
 
 
     private val mCallbacks: MyActivityLifecycleCallbacks = MyActivityLifecycleCallbacks()
 
     var currentActivity: Activity? = null
-
+    private var pluginInitData: JSONArray? = null
     var gWebView: CordovaWebView? = null
     private val gCachedExtras = Collections.synchronizedList(ArrayList<Bundle>())
 
@@ -344,10 +351,15 @@ class PushPlugin : CordovaPlugin() {
     // Better Logging
     fun formatLogMessage(msg: String): String = "Execute::Initialize: ($msg)"
 
+    pluginInitData = data;
+    CordovaCallbackContexts.add(callbackContext)
+
+    var hasPermission = checkForPostNotificationsPermission()
+    if (!hasPermission)
+      return
+
     cordova.threadPool.execute(Runnable {
       Log.v(TAG, formatLogMessage("Data=$data"))
-
-      CordovaCallbackContexts.add(callbackContext)
 
       val sharedPref = applicationContext.getSharedPreferences(
         PushConstants.COM_ADOBE_PHONEGAP_PUSH,
@@ -523,6 +535,54 @@ class PushPlugin : CordovaPlugin() {
       }
     })
   }
+
+
+  private fun checkForPostNotificationsPermission(): Boolean {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      if (!PermissionHelper.hasPermission(this, Manifest.permission.POST_NOTIFICATIONS))
+      {
+        PermissionHelper.requestPermission(
+          this,
+          REQ_CODE_INITIALIZE_PLUGIN,
+          Manifest.permission.POST_NOTIFICATIONS
+        )
+        return false
+      }
+    }
+
+    return true
+  }
+
+
+  override fun onRequestPermissionResult(
+    requestCode: Int,
+    permissions: Array<out String>?,
+    grantResults: IntArray?
+  ) {
+    super.onRequestPermissionResult(requestCode, permissions, grantResults)
+
+    val activityName = getCurrentActivityName()
+    val contexts: ArrayList<CallbackContext> = CordovaCallbackContexts.getCallbacksByActivity(activityName)
+    val pushContext = contexts[0];
+
+    for (r in grantResults!!) {
+      if (r == PackageManager.PERMISSION_DENIED) {
+        pushContext?.sendPluginResult(
+          PluginResult(
+            PluginResult.Status.ILLEGAL_ACCESS_EXCEPTION,
+            "Permission to post notifications was denied by the user"
+          )
+        )
+        return
+      }
+    }
+
+    if (requestCode == REQ_CODE_INITIALIZE_PLUGIN)
+    {
+      executeActionInitialize(pluginInitData!!, pushContext!!)
+    }
+  }
+
 
   private fun executeActionUnregister(callbackContext: CallbackContext) {
     // Better Logging
