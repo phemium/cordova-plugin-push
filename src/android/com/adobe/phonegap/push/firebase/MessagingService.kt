@@ -62,15 +62,6 @@ class MessagingService : FirebaseMessagingService() {
     }
   }
 
-  override fun onNewToken(s: String?) {
-    super.onNewToken(s)
-    Log.d(TAG, "Received new token: $s")
-    getSharedPreferences(
-      PushConstants.COM_ADOBE_PHONEGAP_PUSH,
-      Context.MODE_PRIVATE
-    ).edit().putString("fcmToken", s).apply()
-  }
-
   private val context: Context
     get() = applicationContext
 

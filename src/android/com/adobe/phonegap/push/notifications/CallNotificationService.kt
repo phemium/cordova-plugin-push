@@ -117,7 +117,7 @@ class CallNotificationService : Service() {
             this,
             0,
             lostCallIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         pi.send()
     }

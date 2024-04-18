@@ -27,13 +27,15 @@ import com.adobe.phonegap.push.notifications.channels.MessageChannel
 import com.adobe.phonegap.push.utils.CordovaCallbackContexts
 import com.adobe.phonegap.push.utils.ServiceUtils
 import com.adobe.phonegap.push.utils.Tools
-import com.google.firebase.iid.FirebaseInstanceId
+import com.google.android.gms.tasks.Tasks
+import com.google.firebase.messaging.FirebaseMessaging
 import org.apache.cordova.*
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
 import java.util.*
+import java.util.concurrent.ExecutionException
 
 
 /**
@@ -409,13 +411,34 @@ class PushPlugin : CordovaPlugin() {
           Log.e(TAG, formatLogMessage("Firebase Token Exception ${e.message}"))
         }
 
-        if (token == null) {
+        token = try {
           try {
-            token = FirebaseInstanceId.getInstance().getToken(senderID, PushConstants.FCM)
-          } catch (e: IllegalStateException) {
-            Log.e(TAG, formatLogMessage("Firebase Token Exception ${e.message}"))
+            Tasks.await(FirebaseMessaging.getInstance().token)
+          } catch (e: ExecutionException) {
+            throw e.cause ?: e
+          }
+        } catch (e: IllegalStateException) {
+          Log.e(TAG, formatLogMessage("Firebase Token Exception ${e.message}"))
+          null
+        } catch (e: ExecutionException) {
+          Log.e(TAG, formatLogMessage("Firebase Token Exception ${e.message}"))
+          null
+        } catch (e: InterruptedException) {
+          Log.e(TAG, formatLogMessage("Firebase Token Exception ${e.message}"))
+          null
+        }
+
+        FirebaseMessaging.getInstance().token.addOnSuccessListener { result ->
+          if(result != null){
+            Log.d(TAG, "Received new token: $result")
+            applicationContext.getSharedPreferences(
+              PushConstants.COM_ADOBE_PHONEGAP_PUSH,
+              Context.MODE_PRIVATE
+            ).edit().putString("fcmToken", result).apply()
           }
         }
+
+        Log.d(TAG, formatLogMessage("Firebase Token: ${token}"))
 
         if (token != "") {
           val registration = JSONObject().put(PushConstants.REGISTRATION_ID, token).apply {
@@ -595,7 +618,11 @@ class PushPlugin : CordovaPlugin() {
           Context.MODE_PRIVATE
         )
 
-        FirebaseInstanceId.getInstance().deleteInstanceId()
+        try {
+          Tasks.await(FirebaseMessaging.getInstance().deleteToken())
+        } catch (e: ExecutionException) {
+          throw e.cause ?: e
+        }
         Log.v(TAG, formatLogMessage("UNREGISTER"))
 
         /**

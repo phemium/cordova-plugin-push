@@ -187,7 +187,7 @@ class NotificationBuilder @RequiresApi(api = Build.VERSION_CODES.O) constructor(
                 context,
                 1201,
                 intent,
-                PendingIntent.FLAG_UPDATE_CURRENT
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
             Debug(TAG, "getCancelCallIntent", "OK")
             return cancelIntent
@@ -205,7 +205,7 @@ class NotificationBuilder @RequiresApi(api = Build.VERSION_CODES.O) constructor(
                 context,
                 1205,
                 intent,
-                PendingIntent.FLAG_UPDATE_CURRENT
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
             Debug(TAG, "getFullScreenIntent", "OK")
             return cancelIntent
@@ -226,7 +226,7 @@ class NotificationBuilder @RequiresApi(api = Build.VERSION_CODES.O) constructor(
                 context,
                 1200,
                 intent,
-                PendingIntent.FLAG_UPDATE_CURRENT
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
             Debug(TAG, "getAcceptCallIntent", "Started")
             return acceptIntent
