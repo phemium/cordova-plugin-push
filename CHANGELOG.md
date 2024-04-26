@@ -1,6 +1,6 @@
 # Change Log
 
-## 3.0.28
+## 3.0.29
 
 - Add method `deleteEnduserSession()`
 
