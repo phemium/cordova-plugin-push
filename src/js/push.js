@@ -341,6 +341,10 @@ module.exports = {
     exec(successCallback, errorCallback, "PushNotification", "changeLanguage", [language]);
   },
 
+  deleteEnduserSession: (successCallback, errorCallback) => {
+    exec(successCallback, errorCallback, "PushNotification", "deleteEnduserSession", []);
+  },
+
   /**
    * PushNotification Object.
    *

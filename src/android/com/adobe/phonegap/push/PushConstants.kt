@@ -119,7 +119,7 @@ object PushConstants {
   const val VIEW_CALL_ACTION: String = "VIEW_CALL"
   const val CALL_CANCEL_ACTION: String = "CALL_CANCEL"
   const val VIEW_CHAT_ACTION: String = "VIEW_CHAT_ACTION"
-  const val DELETE_ENDUSER_SESSION: String = "DELETE_ENDUSER_SESSION"
+  const val DELETE_ENDUSER_SESSION: String = "deleteEnduserToken"
 
   const val EXTRA_CONSULTATION_ID: String = "CONSULTATION_ID"
   const val EXTRA_CONSULTANT: String = "CONSULTANT"

@@ -438,6 +438,9 @@ module.exports = {
   changeLanguage: function changeLanguage(successCallback, errorCallback, language) {
     exec(successCallback, errorCallback, "PushNotification", "changeLanguage", [language]);
   },
+  deleteEnduserSession: function changeLanguage(successCallback, errorCallback) {
+    exec(successCallback, errorCallback, "PushNotification", "deleteEnduserSession", []);
+  },
 
   /**
    * PushNotification Object.
