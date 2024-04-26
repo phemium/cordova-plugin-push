@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.0.28
+
+- Add method `deleteEnduserSession()`
+
 ## 3.0.19
 
 - Remove new call code

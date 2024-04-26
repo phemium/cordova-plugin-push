@@ -328,6 +328,7 @@ class PushPlugin : CordovaPlugin() {
       PushConstants.CLEAR_ALL_NOTIFICATIONS -> executeActionClearAllNotifications(callbackContext)
       PushConstants.CLEAR_NOTIFICATION -> executeActionClearNotification(data, callbackContext)
       PushConstants.FINISH_CALL_REQUEST -> executeFinishCallRequest(callbackContext)
+      PushConstants.DELETE_ENDUSER_SESSION -> executeDeleteEnduserSession(callbackContext)
       else -> {
         Log.e(TAG, "Execute: Invalid Action $action")
         callbackContext.sendPluginResult(PluginResult(PluginResult.Status.INVALID_ACTION))
@@ -709,6 +710,14 @@ class PushPlugin : CordovaPlugin() {
     cordova.threadPool.execute {
       Log.v(TAG, "Execute Clear All Notifications")
       ServiceUtils.notificationService(applicationContext).cancelAll()
+      callbackContext.success()
+    }
+  }
+
+  private fun executeDeleteEnduserSession(callbackContext: CallbackContext) {
+    cordova.threadPool.execute {
+      Log.v(TAG, "Execute Delete Enduser Session")
+      PEM.deleteEnduserToken()
       callbackContext.success()
     }
   }

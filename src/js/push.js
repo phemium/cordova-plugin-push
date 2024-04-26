@@ -156,6 +156,24 @@ class PushNotification {
   }
 
   /**
+   * Clear all notifications
+   */
+
+  deleteEnduserSession(successCallback = () => {}, errorCallback = () => {}) {
+    if (typeof errorCallback !== "function") {
+      console.log("PushNotification.deleteEnduserSession failure: failure callback not a function");
+      return;
+    }
+
+    if (typeof successCallback !== "function") {
+      console.log("PushNotification.deleteEnduserSession failure: success callback not a function");
+      return;
+    }
+
+    exec(successCallback, errorCallback, "PushNotification", "deleteEnduserSession", []);
+  }
+
+  /**
    * Clears notifications that have the ID specified.
    * @param  {Function} [successCallback] Callback function to be called on success.
    * @param  {Function} [errorCallback] Callback function to be called when an error is encountered.

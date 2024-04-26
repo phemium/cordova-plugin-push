@@ -22,6 +22,10 @@ object PEM {
         environment = env
     }
 
+  fun deleteEnduserToken() {
+    enduserToken = "";
+  }
+
     fun getEnduserParamsForChat(consultationId: Int): String {
         val params = Bundle()
         params.putString("enduser_token", enduserToken)
