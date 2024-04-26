@@ -68,7 +68,7 @@
 
       <preference name="GradlePluginKotlinEnabled" value="true" />
       <preference name="GradlePluginKotlinCodeStyle" value="official" />
-      <preference name="GradlePluginKotlinVersion" value="1.5.20" />
+      <preference name="GradlePluginKotlinVersion" value="1.6.20" />
     </config-file>
 
     <preference name="ANDROIDX_CORE_VERSION" default="1.6.+"/>
