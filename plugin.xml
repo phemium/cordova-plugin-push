@@ -114,6 +114,7 @@
   </platform>
 
   <platform name="ios">
+    <hook type="before_compile" src="hooks/ios/beforeCompile.js"/>
     <preference name="IOS_FIREBASE_MESSAGING_VERSION" default="~> 6.32.2"/>
 
     <config-file target="config.xml" parent="/*">
