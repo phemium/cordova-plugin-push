@@ -10,7 +10,7 @@ function configureFirebaseIOS(context) {
   console.log("[cordova-plugin-push::before-compile] Importing Firebase...");
   const appName = getAppName(context);
 
-  const appDelegate = join(context.opts.projectRoot, "platforms/ios", `${appName}/AppDelegate.m`);
+  const appDelegate = join(context.opts.projectRoot, "platforms/ios", `${appName}/Classes/AppDelegate.m`);
   const appDelegateContent = readFileSync(appDelegate, "utf8");
   if (!appDelegateContent.includes("[FIRApp configure]")) {
     const lines = appDelegateContent.split("\n");
