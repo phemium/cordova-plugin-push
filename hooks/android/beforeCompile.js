@@ -1,19 +1,30 @@
-const { join } = require("path");
-const { existsSync, readFileSync, writeFileSync } = require("fs");
-const { promisify } = require("util");
-const { parseElementtreeSync } = require("cordova-common/src/util/xml-helpers");
-const platform = require("cordova-android");
-const _glob = require("glob");
-const glob = promisify(_glob);
+const { join } = require('path');
+const { existsSync, readFileSync, writeFileSync } = require('fs');
+const { parseElementtreeSync } = require('cordova-common/src/util/xml-helpers');
+const platform = require('cordova-android');
+
+const { promisify } = require('util');
+const nodeMajorVersion = parseInt(process.versions.node.split('.')[0], 10);
+
+let glob;
+
+if (nodeMajorVersion < 16) {
+  // Node.js < 16: usar glob v7 con callback + promisify
+  const _glob = require('glob');
+  glob = promisify(_glob);
+} else {
+  // Node.js >= 16: usar glob v8+ con API basada en promesas
+  glob = require('glob').glob;
+}
 
 module.exports = async function (context) {
   await configurePEM(context);
   if (!isExecutable()) {
-    console.log("[cordova-plugin-push::before-compile] skipping before_compile hookscript.");
+    console.log('[cordova-plugin-push::before-compile] skipping before_compile hookscript.');
     return;
   }
 
-  const buildGradleFilePath = join(context.opts.projectRoot, "platforms/android/build.gradle");
+  const buildGradleFilePath = join(context.opts.projectRoot, 'platforms/android/build.gradle');
 
   if (!existsSync(buildGradleFilePath)) {
     console.log('[cordova-plugin-push::before-compile] could not find "build.gradle" file.');
@@ -34,7 +45,7 @@ function isExecutable() {
 
 function getPluginKotlinVersion(context) {
   const pluginConfig = parseElementtreeSync(
-    join(context.opts.projectRoot, "plugins/@phemium-costaisa/cordova-plugin-push/plugin.xml")
+    join(context.opts.projectRoot, 'plugins/@phemium-costaisa/cordova-plugin-push/plugin.xml')
   );
 
   return pluginConfig
@@ -42,73 +53,66 @@ function getPluginKotlinVersion(context) {
     .pop()
     .findall('./config-file[@target="config.xml"]')
     .pop()
-    .findall("preference")
-    .filter((elem) => elem.attrib.name.toLowerCase() === "GradlePluginKotlinVersion".toLowerCase())
+    .findall('preference')
+    .filter((elem) => elem.attrib.name.toLowerCase() === 'GradlePluginKotlinVersion'.toLowerCase())
     .pop().attrib.value;
 }
 
 function updateBuildGradle(context, buildGradleFilePath) {
   const kotlinVersion = getPluginKotlinVersion(context);
-  const updateContent = readFileSync(buildGradleFilePath, "utf8").replace(
+  const updateContent = readFileSync(buildGradleFilePath, 'utf8').replace(
     /ext.kotlin_version = ['"](.*)['"]/g,
     `ext.kotlin_version = '${kotlinVersion}'`
   );
 
   writeFileSync(buildGradleFilePath, updateContent);
 
-  console.log(
-    `[cordova-plugin-push::before-compile] updated "build.gradle" file with kotlin version set to: ${kotlinVersion}`
-  );
+  console.log(`[cordova-plugin-push::before-compile] updated "build.gradle" file with kotlin version set to: ${kotlinVersion}`);
 }
 
 async function configurePEM(context) {
-  console.log("[cordova-plugin-push::before-compile] Configuring PEM integration");
+  console.log('[cordova-plugin-push::before-compile] Configuring PEM integration');
   const pemDir = join(
     context.opts.projectRoot,
-    "platforms/android/app/src/main/java/com/phemium/plugins/PhemiumEnduserPlugin.java"
+    'platforms/android/app/src/main/java/com/phemium/plugins/PhemiumEnduserPlugin.java'
   );
   const pemIntegration = existsSync(pemDir);
   if (pemIntegration) {
-    console.log(
-      "[cordova-plugin-push::before-compile] PEM detected, enabling PEM feature in plugin"
-    );
+    console.log('[cordova-plugin-push::before-compile] PEM detected, enabling PEM feature in plugin');
   } else {
-    console.log(
-      "[cordova-plugin-push::before-compile] PEM not detected, disabling PEM feature in plugin"
-    );
+    console.log('[cordova-plugin-push::before-compile] PEM not detected, disabling PEM feature in plugin');
   }
   let files = await glob(
-    join(context.opts.projectRoot, "platforms/android/app/src/main/java/com/adobe/phonegap/push") +
-      "/**/*.kt"
+    join(context.opts.projectRoot, 'platforms/android/app/src/main/java/com/adobe/phonegap/push') + '/**/*.kt'
   );
   for (const file of files) {
-    let content = readFileSync(file, { encoding: "utf-8" });
-    if (content.includes("// BEGIN PEM")) {
+    let content = readFileSync(file, { encoding: 'utf-8' });
+    if (content.includes('// BEGIN PEM')) {
       let lines = content.split(/\r?\n/);
 
       let pemSection = null;
       for (const [index, line] of lines.entries()) {
-        if (line.trim() === "// END PEM") {
+        if (line.trim() === '// END PEM') {
           pemSection = null;
         }
         if (pemSection !== null) {
           // Is PEM section
           if (pemIntegration) {
-            if (line.startsWith("// ")) {
+            if (line.startsWith('// ')) {
               lines[index] = lines[index].slice(2);
             }
           } else {
-            lines[index] = "// " + lines[index];
+            lines[index] = '// ' + lines[index];
           }
         }
-        if ((line.trim() === "// BEGIN PEM" || pemSection) && line.trim() !== "// END PEM") {
+        if ((line.trim() === '// BEGIN PEM' || pemSection) && line.trim() !== '// END PEM') {
           pemSection = true;
         } else {
           pemSection = null;
         }
       }
-      content = lines.join("\r\n");
-      writeFileSync(file, content, { encoding: "utf-8" });
+      content = lines.join('\r\n');
+      writeFileSync(file, content, { encoding: 'utf-8' });
     }
   }
 }
